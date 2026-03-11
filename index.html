@@ -49,9 +49,7 @@ nav {
 }
 .nav-tab:hover { background: rgba(255,255,255,.08); color: #e2e8f0; }
 .nav-tab.active { background: rgba(99,102,241,.2); color: #a5b4fc; }
-.nav-search {
-  margin-left: auto; position: relative; flex-shrink: 0;
-}
+.nav-search { margin-left: auto; position: relative; flex-shrink: 0; }
 .nav-search input {
   background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
   border-radius: 8px; color: #e2e8f0; font-size: 13px;
@@ -168,34 +166,33 @@ tr[data-fam="baseline"] td:first-child { border-left: 3px solid #94a3b8; }
 
 /* Top K */
 .domain-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;
 }
 .domain-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 .domain-hdr { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 10px 14px; }
 .domain-hdr h4 {
   font-size: 13px; font-weight: 600; color: #fff;
-  text-transform: capitalize; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
+  text-transform: capitalize;
 }
 .domain-body { padding: 8px 10px; }
 .topk-list { list-style: none; counter-reset: rank; }
 .topk-item {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: baseline; gap: 8px;
   padding: 6px 4px; border-bottom: 1px solid var(--border-light); counter-increment: rank;
 }
 .topk-item:last-child { border-bottom: none; }
 .topk-item::before {
   content: counter(rank); font-size: 12px; font-weight: 700;
-  color: var(--faint); min-width: 16px; text-align: center;
+  color: var(--faint); min-width: 16px; text-align: center; flex-shrink: 0;
 }
 .tk-name {
   flex: 1; font-size: 13px; color: #334155;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  word-break: break-all; line-height: 1.4;
 }
 .tk-score {
   background: var(--primary-bg); color: var(--primary);
   border-radius: 999px; padding: 2px 10px; font-size: 13px;
-  font-weight: 600; flex-shrink: 0;
+  font-weight: 600; flex-shrink: 0; white-space: nowrap;
 }
 .k-input {
   width: 56px; padding: 6px 10px; border: 1px solid var(--border);
@@ -273,7 +270,6 @@ tr[data-fam="baseline"] td:first-child { border-left: 3px solid #94a3b8; }
 <script>
 let DATA = null, searchQuery = '', chartInits = [];
 
-// ── DOM helper ───────────────────────────────────────────────────────────────
 function h(tag, attrs, ...kids) {
   const el = document.createElement(tag);
   if (attrs) for (const [k, v] of Object.entries(attrs)) {
@@ -297,6 +293,11 @@ function expFamily(name) {
   return b.startsWith('wiki') ? 'wiki' : b.startsWith('acereason') ? 'acereason' : 'baseline';
 }
 
+function baseName(name) {
+  const m = name.match(/^(.+)\/checkpoint-\d+/);
+  return m ? m[1] : name;
+}
+
 function expVal(exp, field) {
   if (field === 'experiment') return exp.name;
   if (field === 'retriever_size') return exp.retriever_size;
@@ -305,7 +306,7 @@ function expVal(exp, field) {
   return s != null ? s.toFixed(2) : '';
 }
 
-// ── Table heatmap ────────────────────────────────────────────────────────────
+// ── Table heatmap (skip cols 0,1 — name & size aren't scores) ───────────────
 function recolor(tbl) {
   const tbody = tbl.querySelector('tbody');
   const rows = [...tbody.querySelectorAll('tr')].filter(r => r.style.display !== 'none');
@@ -329,7 +330,6 @@ function recolor(tbl) {
   }
 }
 
-// ── Table sort ───────────────────────────────────────────────────────────────
 function sortTbl(th) {
   const tbl = th.closest('table'), idx = [...th.parentNode.children].indexOf(th);
   const asc = !th.classList.contains('asc');
@@ -347,7 +347,6 @@ function sortTbl(th) {
   });
 }
 
-// ── Tabs ─────────────────────────────────────────────────────────────────────
 function switchTab(tab) {
   for (const b of document.querySelectorAll('.nav-tab')) b.classList.toggle('active', b.dataset.tab === tab);
   for (const p of document.querySelectorAll('.tab-panel')) p.classList.toggle('active', p.id === 'tab-' + tab);
@@ -356,8 +355,8 @@ function switchTab(tab) {
   }
 }
 
-function selectedSizes(id) {
-  return new Set([...document.querySelectorAll(`#${id} .pill.on`)].map(p => p.dataset.size));
+function selectedSet(containerId, key) {
+  return new Set([...document.querySelectorAll(`#${containerId} .pill.on`)].map(p => p.dataset[key]));
 }
 
 // ── Build: Stats ─────────────────────────────────────────────────────────────
@@ -383,7 +382,8 @@ function buildTopK(data) {
   const kInput = h('input', {type: 'number', id: 'topk-k', value: '3', min: '1', max: '50', cls: 'k-input', oninput: updateTopK});
   const pills = h('div', {cls: 'pill-group', id: 'topk-sizes'});
   for (const s of ['3B', '8B'])
-    pills.appendChild(h('button', {cls: 'pill on', text: s, dataset: {size: s}, onclick: e => { e.target.classList.toggle('on'); updateTopK(); }}));
+    pills.appendChild(h('button', {cls: 'pill on', text: s, dataset: {size: s},
+      onclick: e => { e.target.classList.toggle('on'); updateTopK(); }}));
 
   const grid = h('div', {cls: 'domain-grid', id: 'topk-grid'});
   for (const t of data.meta.tasks) {
@@ -409,7 +409,7 @@ function buildTopK(data) {
 
 function updateTopK() {
   const k = Math.max(1, parseInt(document.getElementById('topk-k')?.value) || 3);
-  const on = selectedSizes('topk-sizes');
+  const on = selectedSet('topk-sizes', 'size');
   for (const list of document.querySelectorAll('.topk-list')) {
     let shown = 0;
     for (const item of list.querySelectorAll('.topk-item')) {
@@ -420,6 +420,72 @@ function updateTopK() {
   }
 }
 
+// ── Build: Domain Scatter Plot ───────────────────────────────────────────────
+function buildDomainScatter(data) {
+  const {meta} = data;
+  const expMap = {}; data.experiments.forEach(e => expMap[e.name] = e);
+
+  const bestPerGroup = {};
+  for (const exp of data.experiments) {
+    const base = baseName(exp.name);
+    const key = base + '::' + exp.retriever_size;
+    if (!bestPerGroup[key] || (exp.avg || 0) > (bestPerGroup[key].avg || 0))
+      bestPerGroup[key] = exp;
+  }
+  const exps = Object.values(bestPerGroup).sort((a, b) => (b.avg || 0) - (a.avg || 0));
+
+  const famColors = {wiki: '#10b981', acereason: '#8b5cf6', baseline: '#94a3b8'};
+  const sizeSymbols = {'3B': 'circle', '8B': 'diamond'};
+
+  const grid = h('div', {cls: 'chart-grid', id: 'scatter-grid'});
+  const inits = [];
+
+  meta.tasks.forEach((task, i) => {
+    const cid = 'scatter-' + i;
+    const div = h('div', {id: cid, style: {height: '320px'}});
+    grid.appendChild(h('div', {cls: 'chart-card'}, div));
+
+    const sorted = exps.filter(e => e.scores[task] != null)
+      .sort((a, b) => a.scores[task] - b.scores[task]);
+    const names = sorted.map(e => e.name);
+    const scores = sorted.map(e => Math.round(e.scores[task] * 100) / 100);
+    const colors = sorted.map(e => famColors[expFamily(e.name)] || '#94a3b8');
+    const symbols = sorted.map(e => sizeSymbols[e.retriever_size] || 'circle');
+
+    inits.push(() => {
+      Plotly.newPlot(cid, [{
+        type: 'scatter', x: scores, y: names, mode: 'markers',
+        marker: {size: 10, color: colors, symbol: symbols, line: {width: 1, color: '#fff'}},
+        hovertemplate: '%{y}<br>' + meta.metric + ': %{x:.2f}<extra></extra>',
+      }], {
+        title: {text: task.replace(/_/g, ' '), font: {size: 14, color: '#334155', family: 'system-ui'}, x: 0.5},
+        xaxis: {title: meta.metric, titlefont: {size: 11, color: '#64748b'}, tickfont: {size: 10, color: '#94a3b8'},
+                gridcolor: '#f1f5f9', linecolor: '#e2e8f0', zerolinecolor: '#e2e8f0'},
+        yaxis: {tickfont: {size: 10, color: '#475569'}, automargin: true,
+                gridcolor: '#f1f5f9', linecolor: '#e2e8f0'},
+        margin: {l: 10, r: 20, t: 36, b: 50},
+        plot_bgcolor: '#fff', paper_bgcolor: 'rgba(0,0,0,0)',
+        height: 320,
+      }, {responsive: true, displayModeBar: false});
+    });
+  });
+
+  const legend = h('div', {cls: 'legend', style: {marginBottom: '14px'}},
+    ...Object.entries(famColors).map(([n, c]) =>
+      h('span', null, h('span', {cls: 'legend-dot', style: {background: c}}), n)
+    ),
+    h('span', {style: {marginLeft: '12px'}}, '\u25CF 3B'),
+    h('span', null, '\u25C6 8B'),
+  );
+
+  chartInits.push(...inits);
+
+  return h('div', {cls: 'card', id: 'domain-scatter'},
+    h('div', {cls: 'card-title', text: 'Domain Comparison'}),
+    legend, grid
+  );
+}
+
 // ── Build: Experiments Table ─────────────────────────────────────────────────
 function buildExpTable(data) {
   const {experiments, meta} = data;
@@ -428,8 +494,7 @@ function buildExpTable(data) {
 
   const groups = {};
   for (const exp of experiments) {
-    const m = exp.name.match(/^(.+)\/checkpoint-\d+/);
-    const key = (m ? m[1] : exp.name) + '::' + exp.retriever_size;
+    const key = baseName(exp.name) + '::' + exp.retriever_size;
     (groups[key] ??= []).push(exp);
   }
   for (const exps of Object.values(groups))
@@ -440,15 +505,19 @@ function buildExpTable(data) {
     return {best, last: exps[exps.length - 1], children: exps.filter(e => e !== best)};
   }).sort((a, b) => (b.best.avg || 0) - (a.best.avg || 0));
 
-  const allFamilies = [...new Set(experiments.map(e => expFamily(e.name)))].sort();
+  const allBaseNames = [...new Set(parents.map(p => baseName(p.best.name)))].sort();
 
-  const famPills = h('div', {cls: 'pill-group', id: 'fam-pills'});
-  for (const f of allFamilies)
-    famPills.appendChild(h('button', {cls: 'pill on', text: f, dataset: {fam: f}, onclick: () => filterExp()}));
+  // Experiment-name pills (like training curves families)
+  const expPills = h('div', {cls: 'pill-group', id: 'exp-pills'});
+  for (const bn of allBaseNames)
+    expPills.appendChild(h('button', {cls: 'pill on', text: bn, dataset: {base: bn},
+      onclick: e => { e.target.classList.toggle('on'); filterExp(); }}));
 
+  // Size pills
   const sizePills = h('div', {cls: 'pill-group', id: 'size-pills'});
   for (const s of ['3B', '8B'])
-    sizePills.appendChild(h('button', {cls: 'pill on', text: s, dataset: {size: s}, onclick: () => filterExp()}));
+    sizePills.appendChild(h('button', {cls: 'pill on', text: s, dataset: {size: s},
+      onclick: e => { e.target.classList.toggle('on'); filterExp(); }}));
 
   const bestBtn = h('button', {cls: 'toggle-btn on', text: 'Best', onclick: () => setMode('best')});
   const lastBtn = h('button', {cls: 'toggle-btn', text: 'Last', onclick: () => setMode('last')});
@@ -461,8 +530,9 @@ function buildExpTable(data) {
   const tbody = h('tbody');
   parents.forEach((p, i) => {
     const {best, last, children} = p, hasCh = children.length > 0, gid = 'g' + i;
+    const base = baseName(best.name);
     const tr = h('tr', {dataset: {
-      size: best.retriever_size, fam: expFamily(best.name),
+      size: best.retriever_size, fam: expFamily(best.name), base,
       ...(hasCh ? {gid, bestName: best.name, lastName: last.name} : {})
     }});
     if (hasCh) tr.classList.add('parent-row');
@@ -476,7 +546,9 @@ function buildExpTable(data) {
     }
     tbody.appendChild(tr);
     for (const ch of children) {
-      const ctr = h('tr', {cls: 'child-row', style: {display: 'none'}, dataset: {parent: gid, size: ch.retriever_size, fam: expFamily(ch.name)}});
+      const ctr = h('tr', {cls: 'child-row', style: {display: 'none'}, dataset: {
+        parent: gid, size: ch.retriever_size, fam: expFamily(ch.name), base: baseName(ch.name)
+      }});
       for (let j = 0; j < fields.length; j++) {
         const val = expVal(ch, fields[j]), td = h('td', {dataset: {val}, text: val});
         if (j === 0) td.classList.add('child-indent');
@@ -497,7 +569,8 @@ function buildExpTable(data) {
   const card = h('div', {cls: 'card', id: 'experiments'},
     h('div', {cls: 'card-title', text: 'Experiments'}),
     h('div', {cls: 'toolbar'},
-      h('span', {cls: 'toolbar-label', text: 'Family:'}), famPills,
+      h('span', {cls: 'toolbar-label', text: 'Experiments:'}), expPills),
+    h('div', {cls: 'toolbar'},
       h('span', {cls: 'toolbar-label', text: 'Size:'}), sizePills,
       h('span', {cls: 'toolbar-label', text: 'Parent:'}), h('div', {cls: 'toggle-group'}, bestBtn, lastBtn)
     ),
@@ -505,22 +578,19 @@ function buildExpTable(data) {
   );
   requestAnimationFrame(() => recolor(tbl));
 
-  function selectedFamilies() {
-    return new Set([...document.querySelectorAll('#fam-pills .pill.on')].map(p => p.dataset.fam));
-  }
-
   function filterExp() {
-    const onSz = selectedSizes('size-pills');
-    const onFam = selectedFamilies();
+    const onSz = selectedSet('size-pills', 'size');
+    const onBase = selectedSet('exp-pills', 'base');
     for (const row of tbody.querySelectorAll('tr:not(.child-row)')) {
       const name = (row.cells[0]?.dataset.val ?? '').toLowerCase();
-      const show = onSz.has(row.dataset.size) && onFam.has(row.dataset.fam) && (!searchQuery || name.includes(searchQuery));
+      const show = onSz.has(row.dataset.size) && onBase.has(row.dataset.base)
+        && (!searchQuery || name.includes(searchQuery));
       row.style.display = show ? '' : 'none';
       const gid = row.dataset.gid;
       if (gid) {
         const open = row.querySelector('.expand-btn')?.classList.contains('open');
         for (const ch of tbody.querySelectorAll(`[data-parent="${gid}"]`))
-          ch.style.display = (show && open && onSz.has(ch.dataset.size) && onFam.has(ch.dataset.fam)) ? '' : 'none';
+          ch.style.display = (show && open && onSz.has(ch.dataset.size) && onBase.has(ch.dataset.base)) ? '' : 'none';
       }
     }
     recolor(tbl);
@@ -532,7 +602,9 @@ function buildExpTable(data) {
     for (const row of tbody.querySelectorAll('tr.parent-row')) {
       const exp = expMap[mode === 'best' ? row.dataset.bestName : row.dataset.lastName];
       if (!exp) continue;
-      row.dataset.size = exp.retriever_size; row.dataset.fam = expFamily(exp.name);
+      row.dataset.size = exp.retriever_size;
+      row.dataset.fam = expFamily(exp.name);
+      row.dataset.base = baseName(exp.name);
       for (let i = 0; i < row.cells.length; i++) {
         const cell = row.cells[i], val = expVal(exp, fields[i]);
         cell.dataset.val = val;
@@ -554,10 +626,10 @@ function buildExpTable(data) {
     const btn = parent.querySelector('.expand-btn');
     const opening = !btn.classList.contains('open');
     btn.classList.toggle('open', opening);
-    const onSz = selectedSizes('size-pills');
-    const onFam = selectedFamilies();
+    const onSz = selectedSet('size-pills', 'size');
+    const onBase = selectedSet('exp-pills', 'base');
     for (const ch of tbody.querySelectorAll(`[data-parent="${gid}"]`))
-      ch.style.display = (opening && onSz.has(ch.dataset.size) && onFam.has(ch.dataset.fam)) ? '' : 'none';
+      ch.style.display = (opening && onSz.has(ch.dataset.size) && onBase.has(ch.dataset.base)) ? '' : 'none';
     recolor(tbl);
   }
 
@@ -688,6 +760,7 @@ fetch('./data.json')
     const overview = h('div', {cls: 'tab-panel active', id: 'tab-overview'});
     overview.appendChild(buildStats(data));
     overview.appendChild(buildTopK(data));
+    overview.appendChild(buildDomainScatter(data));
     overview.appendChild(buildExpTable(data));
     content.appendChild(overview);
 
@@ -703,6 +776,9 @@ fetch('./data.json')
     });
 
     if (location.hash === '#curves') switchTab('curves');
+
+    requestAnimationFrame(() => chartInits.forEach(fn => fn()));
+    chartInits = [];
   })
   .catch(err => {
     const el = document.getElementById('loading');
