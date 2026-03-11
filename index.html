@@ -412,16 +412,14 @@ function buildStats(data) {
 let topkMode = 'best';
 
 function buildTopK(data) {
-  const bestSet = new Set(), lastSet = new Set();
   const grps = {};
   for (const exp of data.experiments) {
     const key = baseName(exp.name) + '::' + exp.retriever_size;
     (grps[key] ??= []).push(exp);
   }
+  const lastSet = new Set();
   for (const exps of Object.values(grps)) {
     exps.sort((a, b) => (a.checkpoint_step || 0) - (b.checkpoint_step || 0));
-    const best = exps.reduce((a, b) => (a.avg || 0) >= (b.avg || 0) ? a : b);
-    bestSet.add(best.name);
     lastSet.add(exps[exps.length - 1].name);
   }
 
@@ -444,9 +442,17 @@ function buildTopK(data) {
 
   const grid = h('div', {cls: 'domain-grid', id: 'topk-grid'});
   for (const t of data.meta.tasks) {
+    // Per-domain best: within each group, pick the experiment with highest score on THIS task
+    const domainBestSet = new Set();
+    for (const exps of Object.values(grps)) {
+      const withScore = exps.filter(e => e.scores[t] != null);
+      if (withScore.length > 0)
+        domainBestSet.add(withScore.reduce((a, b) => (a.scores[t] || 0) >= (b.scores[t] || 0) ? a : b).name);
+    }
+
     const list = h('ol', {cls: 'topk-list'});
     for (const exp of rankings[t]) {
-      const isBest = bestSet.has(exp.name), isLast = lastSet.has(exp.name);
+      const isBest = domainBestSet.has(exp.name), isLast = lastSet.has(exp.name);
       list.appendChild(h('li', {cls: 'topk-item', dataset: {
         size: exp.retriever_size, best: isBest ? '1' : '', last: isLast ? '1' : ''
       }},
