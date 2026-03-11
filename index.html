@@ -478,12 +478,12 @@ function buildDomainScatter(data) {
     h('span', null, '\u25C6 8B'),
   );
 
-  chartInits.push(...inits);
-
-  return h('div', {cls: 'card', id: 'domain-scatter'},
+  const card = h('div', {cls: 'card', id: 'domain-scatter'},
     h('div', {cls: 'card-title', text: 'Domain Comparison'}),
     legend, grid
   );
+  card._plotInits = inits;
+  return card;
 }
 
 // ── Build: Experiments Table ─────────────────────────────────────────────────
@@ -760,7 +760,8 @@ fetch('./data.json')
     const overview = h('div', {cls: 'tab-panel active', id: 'tab-overview'});
     overview.appendChild(buildStats(data));
     overview.appendChild(buildTopK(data));
-    overview.appendChild(buildDomainScatter(data));
+    const scatterCard = buildDomainScatter(data);
+    overview.appendChild(scatterCard);
     overview.appendChild(buildExpTable(data));
     content.appendChild(overview);
 
@@ -775,10 +776,12 @@ fetch('./data.json')
       document.getElementById('exp-table')?._filter?.();
     });
 
-    if (location.hash === '#curves') switchTab('curves');
+    // Scatter plots are visible now — render immediately
+    if (scatterCard._plotInits) {
+      requestAnimationFrame(() => scatterCard._plotInits.forEach(fn => fn()));
+    }
 
-    requestAnimationFrame(() => chartInits.forEach(fn => fn()));
-    chartInits = [];
+    if (location.hash === '#curves') switchTab('curves');
   })
   .catch(err => {
     const el = document.getElementById('loading');
