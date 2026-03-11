@@ -36,15 +36,15 @@ body {
 /* Nav */
 nav {
   position: sticky; top: 0; z-index: 100;
-  background: var(--nav-bg); height: 54px; padding: 0 24px;
+  background: var(--nav-bg); height: 58px; padding: 0 28px;
   display: flex; align-items: center; gap: 6px;
   box-shadow: 0 1px 0 rgba(0,0,0,.3);
 }
-.nav-brand { color: #fff; font-weight: 700; font-size: 15px; margin-right: 16px; flex-shrink: 0; }
+.nav-brand { color: #fff; font-weight: 700; font-size: 17px; margin-right: 20px; flex-shrink: 0; }
 .nav-tabs { display: flex; gap: 2px; }
 .nav-tab {
-  color: var(--faint); font-size: 13px; font-weight: 500;
-  padding: 6px 14px; border-radius: 8px; cursor: pointer;
+  color: var(--faint); font-size: 14px; font-weight: 500;
+  padding: 8px 16px; border-radius: 8px; cursor: pointer;
   border: none; background: none; transition: all .15s;
 }
 .nav-tab:hover { background: rgba(255,255,255,.08); color: #e2e8f0; }
@@ -54,16 +54,16 @@ nav {
 }
 .nav-search input {
   background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
-  border-radius: 8px; color: #e2e8f0; font-size: 12px;
-  padding: 6px 12px 6px 30px; width: 190px; outline: none; transition: all .2s;
+  border-radius: 8px; color: #e2e8f0; font-size: 13px;
+  padding: 7px 14px 7px 32px; width: 210px; outline: none; transition: all .2s;
 }
 .nav-search input::placeholder { color: var(--faint); }
-.nav-search input:focus { background: rgba(255,255,255,.12); border-color: rgba(99,102,241,.5); width: 250px; }
+.nav-search input:focus { background: rgba(255,255,255,.12); border-color: rgba(99,102,241,.5); width: 270px; }
 .nav-search-icon {
   position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
   color: var(--faint); pointer-events: none;
 }
-.nav-meta { font-size: 11px; color: #475569; flex-shrink: 0; margin-left: 12px; }
+.nav-meta { font-size: 12px; color: #475569; flex-shrink: 0; margin-left: 12px; }
 
 /* Layout */
 #content { max-width: 1440px; margin: 0 auto; padding: 20px; }
@@ -73,48 +73,48 @@ nav {
 /* Cards */
 .card {
   background: var(--surface); border-radius: var(--radius);
-  padding: 20px 24px; box-shadow: var(--shadow); margin-bottom: 16px;
+  padding: 24px 28px; box-shadow: var(--shadow); margin-bottom: 20px;
 }
 .card-title {
-  font-size: 14px; font-weight: 600; margin-bottom: 16px;
-  display: flex; align-items: center; gap: 8px;
+  font-size: 17px; font-weight: 600; margin-bottom: 18px;
+  display: flex; align-items: center; gap: 10px;
 }
 .card-title::before {
-  content: ''; width: 3px; height: 18px;
+  content: ''; width: 4px; height: 22px;
   background: var(--primary); border-radius: 2px; flex-shrink: 0;
 }
 
 /* Stats */
-.stats-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.stats-row { display: flex; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
 .stat {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 10px; padding: 14px 20px; text-align: center;
-  min-width: 100px; box-shadow: var(--shadow);
+  border-radius: 10px; padding: 16px 24px; text-align: center;
+  min-width: 110px; box-shadow: var(--shadow);
 }
-.stat-val { font-size: 1.4rem; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.stat-val { font-size: 1.6rem; font-weight: 700; color: var(--primary); line-height: 1.2; }
 .stat-lbl {
-  font-size: 10px; text-transform: uppercase;
-  letter-spacing: .06em; color: var(--muted); margin-top: 2px;
+  font-size: 12px; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--muted); margin-top: 4px;
 }
 
 /* Toolbar / Controls */
 .toolbar {
-  display: flex; align-items: center; gap: 14px;
-  flex-wrap: wrap; margin-bottom: 14px; font-size: 12px; color: var(--muted);
+  display: flex; align-items: center; gap: 16px;
+  flex-wrap: wrap; margin-bottom: 16px; font-size: 14px; color: var(--muted);
 }
 .toolbar-label { font-weight: 500; }
-.pill-group { display: flex; gap: 4px; }
+.pill-group { display: flex; gap: 5px; flex-wrap: wrap; }
 .pill {
   background: var(--border); color: var(--muted); border: none;
-  border-radius: 999px; padding: 4px 14px; font-size: 12px;
+  border-radius: 999px; padding: 6px 18px; font-size: 13px;
   font-weight: 500; cursor: pointer; transition: all .15s; line-height: 1.5;
 }
 .pill.on { background: var(--primary); color: #fff; }
 .pill:hover:not(.on) { background: #cbd5e1; color: var(--text); }
-.toggle-group { display: flex; background: var(--border); border-radius: 999px; padding: 2px; }
+.toggle-group { display: flex; background: var(--border); border-radius: 999px; padding: 3px; }
 .toggle-btn {
   background: none; border: none; border-radius: 999px;
-  padding: 4px 14px; font-size: 12px; font-weight: 500;
+  padding: 6px 18px; font-size: 13px; font-weight: 500;
   cursor: pointer; color: var(--muted); transition: all .15s;
 }
 .toggle-btn.on { background: var(--primary); color: #fff; }
@@ -123,21 +123,21 @@ nav {
 .tbl-wrap {
   overflow-x: auto; border: 1px solid var(--border); border-radius: 10px;
 }
-table { border-collapse: collapse; font-size: 12px; white-space: nowrap; width: 100%; }
+table { border-collapse: collapse; font-size: 13px; white-space: nowrap; width: 100%; }
 thead th {
   position: sticky; top: 0; z-index: 2;
-  background: #f8fafc; color: #475569; font-size: 10px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: .06em; padding: 10px 12px;
+  background: #f8fafc; color: #475569; font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .04em; padding: 12px 14px;
   text-align: right; border-bottom: 2px solid var(--border);
   cursor: pointer; user-select: none; transition: all .12s;
 }
 thead th:first-child, thead th:nth-child(2) { text-align: left; }
 thead th.sorted { background: var(--primary-bg); color: var(--primary-dark); }
-thead th.asc::after { content: ' \2191'; font-size: 10px; }
-thead th.desc::after { content: ' \2193'; font-size: 10px; }
+thead th.asc::after { content: ' \2191'; font-size: 11px; }
+thead th.desc::after { content: ' \2193'; font-size: 11px; }
 tbody td {
-  padding: 7px 12px; border-bottom: 1px solid var(--border-light);
-  text-align: right; font-size: 12px; font-variant-numeric: tabular-nums;
+  padding: 9px 14px; border-bottom: 1px solid var(--border-light);
+  text-align: right; font-size: 13px; font-variant-numeric: tabular-nums;
   transition: background .1s;
 }
 tbody td:first-child, tbody td:nth-child(2) { text-align: left; }
@@ -146,10 +146,10 @@ tbody tr:hover td { background: #f8fafc !important; }
 td.best { outline: 2px solid var(--primary); outline-offset: -2px; font-weight: 700; }
 td.worst { outline: 2px solid #ef4444; outline-offset: -2px; font-weight: 700; }
 .child-row td { background: #fafbfc; }
-.child-indent { padding-left: 28px !important; border-left: 3px solid var(--border); }
+.child-indent { padding-left: 32px !important; border-left: 3px solid var(--border); }
 .expand-btn {
   background: none; border: none; color: var(--faint);
-  cursor: pointer; font-size: 10px; padding: 0 4px 0 0;
+  cursor: pointer; font-size: 11px; padding: 0 5px 0 0;
   vertical-align: middle; transition: color .15s, transform .2s;
   display: inline-block;
 }
@@ -160,46 +160,46 @@ td.worst { outline: 2px solid #ef4444; outline-offset: -2px; font-weight: 700; }
 tr[data-fam="wiki"] td:first-child { border-left: 3px solid #10b981; }
 tr[data-fam="acereason"] td:first-child { border-left: 3px solid #8b5cf6; }
 tr[data-fam="baseline"] td:first-child { border-left: 3px solid #94a3b8; }
-.legend { display: flex; gap: 16px; font-size: 11px; color: var(--muted); margin-top: 12px; }
+.legend { display: flex; gap: 18px; font-size: 13px; color: var(--muted); margin-top: 14px; }
 .legend-dot {
-  display: inline-block; width: 8px; height: 8px;
-  border-radius: 50%; margin-right: 5px; vertical-align: middle;
+  display: inline-block; width: 10px; height: 10px;
+  border-radius: 50%; margin-right: 6px; vertical-align: middle;
 }
 
 /* Top K */
 .domain-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px;
 }
 .domain-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.domain-hdr { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 8px 12px; }
+.domain-hdr { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 10px 14px; }
 .domain-hdr h4 {
-  font-size: 11px; font-weight: 600; color: #fff;
+  font-size: 13px; font-weight: 600; color: #fff;
   text-transform: capitalize; white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis;
 }
-.domain-body { padding: 6px 8px; }
+.domain-body { padding: 8px 10px; }
 .topk-list { list-style: none; counter-reset: rank; }
 .topk-item {
-  display: flex; align-items: center; gap: 6px;
-  padding: 4px; border-bottom: 1px solid var(--border-light); counter-increment: rank;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 4px; border-bottom: 1px solid var(--border-light); counter-increment: rank;
 }
 .topk-item:last-child { border-bottom: none; }
 .topk-item::before {
-  content: counter(rank); font-size: 10px; font-weight: 700;
-  color: var(--faint); min-width: 14px; text-align: center;
+  content: counter(rank); font-size: 12px; font-weight: 700;
+  color: var(--faint); min-width: 16px; text-align: center;
 }
 .tk-name {
-  flex: 1; font-size: 11px; color: #334155;
+  flex: 1; font-size: 13px; color: #334155;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .tk-score {
   background: var(--primary-bg); color: var(--primary);
-  border-radius: 999px; padding: 1px 8px; font-size: 11px;
+  border-radius: 999px; padding: 2px 10px; font-size: 13px;
   font-weight: 600; flex-shrink: 0;
 }
 .k-input {
-  width: 50px; padding: 4px 8px; border: 1px solid var(--border);
-  border-radius: 6px; font-size: 12px; text-align: center; outline: none;
+  width: 56px; padding: 6px 10px; border: 1px solid var(--border);
+  border-radius: 6px; font-size: 14px; text-align: center; outline: none;
   -moz-appearance: textfield;
 }
 .k-input::-webkit-inner-spin-button,
@@ -209,19 +209,19 @@ tr[data-fam="baseline"] td:first-child { border-left: 3px solid #94a3b8; }
 /* Training Curves */
 .curves-controls {
   background: var(--surface); border-radius: var(--radius);
-  padding: 16px 20px; box-shadow: var(--shadow); margin-bottom: 16px;
+  padding: 20px 24px; box-shadow: var(--shadow); margin-bottom: 20px;
 }
 .size-label {
   display: inline-block; background: var(--primary-bg); color: var(--primary);
-  border-radius: 6px; padding: 4px 10px; font-size: 12px;
-  font-weight: 600; margin: 12px 0 8px;
+  border-radius: 6px; padding: 6px 14px; font-size: 14px;
+  font-weight: 600; margin: 14px 0 10px;
 }
 .chart-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;
 }
 .chart-card {
   background: #fafbfc; border: 1px solid var(--border);
-  border-radius: 10px; padding: 10px 8px 6px; overflow: hidden;
+  border-radius: 10px; padding: 12px 10px 8px; overflow: hidden;
 }
 
 /* Loading */
@@ -235,7 +235,7 @@ tr[data-fam="baseline"] td:first-child { border-left: 3px solid #94a3b8; }
   animation: spin .7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.loading-text { text-align: center; color: var(--muted); font-size: 13px; }
+.loading-text { text-align: center; color: var(--muted); font-size: 14px; }
 .loading-text code {
   background: var(--bg); border: 1px solid var(--border);
   padding: 2px 6px; border-radius: 4px; font-size: 11px; color: var(--primary);
@@ -311,13 +311,13 @@ function recolor(tbl) {
   const rows = [...tbody.querySelectorAll('tr')].filter(r => r.style.display !== 'none');
   const n = tbl.querySelector('thead tr').cells.length;
   const mins = Array(n).fill(Infinity), maxs = Array(n).fill(-Infinity);
-  for (const row of rows) for (let i = 0; i < row.cells.length; i++) {
+  for (const row of rows) for (let i = 2; i < row.cells.length; i++) {
     const v = parseFloat(row.cells[i].dataset.val);
     if (!isNaN(v)) { mins[i] = Math.min(mins[i], v); maxs[i] = Math.max(maxs[i], v); }
   }
   for (const row of tbody.querySelectorAll('tr')) {
     const vis = row.style.display !== 'none';
-    for (let i = 0; i < row.cells.length; i++) {
+    for (let i = 2; i < row.cells.length; i++) {
       const c = row.cells[i]; c.classList.remove('best', 'worst');
       const v = parseFloat(c.dataset.val);
       if (!isNaN(v) && maxs[i] > mins[i] && vis) {
@@ -354,27 +354,6 @@ function switchTab(tab) {
   if (tab === 'curves' && chartInits.length) {
     requestAnimationFrame(() => { chartInits.forEach(fn => fn()); chartInits = []; });
   }
-}
-
-// ── Search ───────────────────────────────────────────────────────────────────
-function applySearch(q) {
-  searchQuery = q.toLowerCase();
-  const tbl = document.getElementById('exp-table');
-  if (!tbl) return;
-  const tbody = tbl.querySelector('tbody');
-  const on = selectedSizes('size-pills');
-  for (const row of tbody.querySelectorAll('tr:not(.child-row)')) {
-    const name = (row.cells[0]?.dataset.val ?? '').toLowerCase();
-    const show = (!searchQuery || name.includes(searchQuery)) && on.has(row.dataset.size);
-    row.style.display = show ? '' : 'none';
-    const gid = row.dataset.gid;
-    if (gid) {
-      for (const ch of tbody.querySelectorAll(`[data-parent="${gid}"]`)) ch.style.display = 'none';
-      const btn = row.querySelector('.expand-btn');
-      if (btn) btn.classList.remove('open');
-    }
-  }
-  recolor(tbl);
 }
 
 function selectedSizes(id) {
@@ -461,6 +440,12 @@ function buildExpTable(data) {
     return {best, last: exps[exps.length - 1], children: exps.filter(e => e !== best)};
   }).sort((a, b) => (b.best.avg || 0) - (a.best.avg || 0));
 
+  const allFamilies = [...new Set(experiments.map(e => expFamily(e.name)))].sort();
+
+  const famPills = h('div', {cls: 'pill-group', id: 'fam-pills'});
+  for (const f of allFamilies)
+    famPills.appendChild(h('button', {cls: 'pill on', text: f, dataset: {fam: f}, onclick: () => filterExp()}));
+
   const sizePills = h('div', {cls: 'pill-group', id: 'size-pills'});
   for (const s of ['3B', '8B'])
     sizePills.appendChild(h('button', {cls: 'pill on', text: s, dataset: {size: s}, onclick: () => filterExp()}));
@@ -512,6 +497,7 @@ function buildExpTable(data) {
   const card = h('div', {cls: 'card', id: 'experiments'},
     h('div', {cls: 'card-title', text: 'Experiments'}),
     h('div', {cls: 'toolbar'},
+      h('span', {cls: 'toolbar-label', text: 'Family:'}), famPills,
       h('span', {cls: 'toolbar-label', text: 'Size:'}), sizePills,
       h('span', {cls: 'toolbar-label', text: 'Parent:'}), h('div', {cls: 'toggle-group'}, bestBtn, lastBtn)
     ),
@@ -519,17 +505,22 @@ function buildExpTable(data) {
   );
   requestAnimationFrame(() => recolor(tbl));
 
+  function selectedFamilies() {
+    return new Set([...document.querySelectorAll('#fam-pills .pill.on')].map(p => p.dataset.fam));
+  }
+
   function filterExp() {
-    const on = selectedSizes('size-pills');
+    const onSz = selectedSizes('size-pills');
+    const onFam = selectedFamilies();
     for (const row of tbody.querySelectorAll('tr:not(.child-row)')) {
       const name = (row.cells[0]?.dataset.val ?? '').toLowerCase();
-      const show = on.has(row.dataset.size) && (!searchQuery || name.includes(searchQuery));
+      const show = onSz.has(row.dataset.size) && onFam.has(row.dataset.fam) && (!searchQuery || name.includes(searchQuery));
       row.style.display = show ? '' : 'none';
       const gid = row.dataset.gid;
       if (gid) {
         const open = row.querySelector('.expand-btn')?.classList.contains('open');
         for (const ch of tbody.querySelectorAll(`[data-parent="${gid}"]`))
-          ch.style.display = (show && open && on.has(ch.dataset.size)) ? '' : 'none';
+          ch.style.display = (show && open && onSz.has(ch.dataset.size) && onFam.has(ch.dataset.fam)) ? '' : 'none';
       }
     }
     recolor(tbl);
@@ -543,9 +534,16 @@ function buildExpTable(data) {
       if (!exp) continue;
       row.dataset.size = exp.retriever_size; row.dataset.fam = expFamily(exp.name);
       for (let i = 0; i < row.cells.length; i++) {
-        if (row.cells[i].querySelector('.expand-btn')) continue;
-        const val = expVal(exp, fields[i]);
-        row.cells[i].dataset.val = val; row.cells[i].textContent = val;
+        const cell = row.cells[i], val = expVal(exp, fields[i]);
+        cell.dataset.val = val;
+        const btn = cell.querySelector('.expand-btn');
+        if (btn) {
+          cell.textContent = '';
+          cell.appendChild(btn);
+          cell.appendChild(document.createTextNode(' ' + val));
+        } else {
+          cell.textContent = val;
+        }
       }
     }
     recolor(tbl);
@@ -556,9 +554,10 @@ function buildExpTable(data) {
     const btn = parent.querySelector('.expand-btn');
     const opening = !btn.classList.contains('open');
     btn.classList.toggle('open', opening);
-    const on = selectedSizes('size-pills');
+    const onSz = selectedSizes('size-pills');
+    const onFam = selectedFamilies();
     for (const ch of tbody.querySelectorAll(`[data-parent="${gid}"]`))
-      ch.style.display = (opening && on.has(ch.dataset.size)) ? '' : 'none';
+      ch.style.display = (opening && onSz.has(ch.dataset.size) && onFam.has(ch.dataset.fam)) ? '' : 'none';
     recolor(tbl);
   }
 
@@ -644,15 +643,15 @@ function buildCharts(base, size, exps, tasks, metric) {
   const color = size === '8B' ? '#8b5cf6' : '#6366f1';
   const grid = h('div', {cls: 'chart-grid'}), inits = [];
   const plotLayout = {
-    margin: {l: 45, r: 10, t: 30, b: 45},
-    plot_bgcolor: '#fff', paper_bgcolor: 'rgba(0,0,0,0)', height: 200,
+    margin: {l: 48, r: 12, t: 34, b: 48},
+    plot_bgcolor: '#fff', paper_bgcolor: 'rgba(0,0,0,0)', height: 240,
   };
-  const axisBase = {titlefont: {size: 9, color: '#64748b'}, tickfont: {size: 8, color: '#94a3b8'},
+  const axisBase = {titlefont: {size: 11, color: '#64748b'}, tickfont: {size: 10, color: '#94a3b8'},
     gridcolor: '#f1f5f9', linecolor: '#e2e8f0', zerolinecolor: '#e2e8f0'};
 
   tasks.forEach((task, i) => {
     const cid = `c-${base.replace(/[^a-zA-Z0-9]/g, '')}-${size}-${i}`;
-    const div = h('div', {id: cid, style: {height: '200px'}});
+    const div = h('div', {id: cid, style: {height: '240px'}});
     grid.appendChild(h('div', {cls: 'chart-card'}, div));
     const steps = [], ys = [];
     for (const exp of exps) if (exp.checkpoint_step != null && exp.scores[task] != null) {
@@ -666,7 +665,7 @@ function buildCharts(base, size, exps, tasks, metric) {
         hovertemplate: '%{x}: %{y:.2f}<extra>' + size + '</extra>',
       }], {
         ...plotLayout,
-        title: {text: task.replace(/_/g, ' '), font: {size: 11, color: '#334155', family: 'system-ui'}, x: 0.5},
+        title: {text: task.replace(/_/g, ' '), font: {size: 13, color: '#334155', family: 'system-ui'}, x: 0.5},
         xaxis: {title: 'step', ...axisBase}, yaxis: {title: metric, ...axisBase},
       }, {responsive: true, displayModeBar: false});
     });
@@ -699,7 +698,7 @@ fetch('./data.json')
     for (const btn of document.querySelectorAll('.nav-tab'))
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     document.getElementById('search').addEventListener('input', e => {
-      applySearch(e.target.value);
+      searchQuery = e.target.value.toLowerCase();
       document.getElementById('exp-table')?._filter?.();
     });
 
