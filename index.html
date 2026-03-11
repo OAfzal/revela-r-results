@@ -6,84 +6,497 @@
 <title>BRIGHT Results</title>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <style>
-*{box-sizing:border-box}
-body{font-family:system-ui,sans-serif;margin:0;background:#f0f2f5;color:#222}
-nav{position:sticky;top:0;background:#1a1a2e;padding:8px 16px;display:flex;
-    flex-wrap:wrap;gap:6px;align-items:center;z-index:100}
-.nav-title{color:#fff;font-weight:600;font-size:14px;margin-right:10px}
-nav a{color:#a0c4ff;text-decoration:none;font-size:12px;padding:3px 8px;border-radius:4px}
-nav a:hover{background:rgba(255,255,255,.15)}
-#content{padding:16px}
-section{margin:0 0 20px;background:#fff;border-radius:8px;padding:20px;
-        box-shadow:0 1px 4px rgba(0,0,0,.1)}
-section h2{margin:0 0 12px;font-size:1.1em;color:#333}
-.loading-msg{text-align:center;padding:60px;color:#666;font-size:14px;line-height:1.8}
-.loading-msg code{background:#eee;padding:2px 6px;border-radius:3px}
+/* ── Reset & base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
-/* ── table ──────────────────────────────────────────────────────────────── */
-.tbl-controls{display:flex;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap;
-              font-size:13px;color:#555}
-.tbl-controls label{cursor:pointer;user-select:none}
-input[type=checkbox]{cursor:pointer;accent-color:#4a90d9}
-.tbl-wrap{overflow-x:auto}
-table{border-collapse:collapse;font-size:12px;white-space:nowrap}
-th{background:#2d2d2d;color:#fff;padding:6px 10px;text-align:right;
-   cursor:pointer;user-select:none}
-th:first-child,th:nth-child(2){text-align:left}
-th[data-asc]::after{content:' ▲'}
-th[data-desc]::after{content:' ▼'}
-td{padding:4px 10px;border-bottom:1px solid #eee;text-align:right}
-td:first-child,td:nth-child(2){text-align:left;font-size:11px}
-tr:hover td{filter:brightness(.94)}
-td.cell-best {outline:2px solid #2a6db5;outline-offset:-2px;font-weight:700}
-td.cell-worst{outline:2px solid #c0392b;outline-offset:-2px;font-weight:700}
-.child-row{background:#fafafa}
-.child-first{padding-left:28px!important;border-left:3px solid #d0d0d0}
-.toggle{background:none;border:none;color:#aaa;cursor:pointer;font-size:10px;
-        padding:0 3px 0 0;vertical-align:middle;line-height:1}
-.toggle:hover{color:#333}
+html { scroll-behavior: smooth; }
 
-/* family stripes */
-tr[data-family="wiki"]      td:first-child{border-left:4px solid #2ecc71}
-tr[data-family="acereason"] td:first-child{border-left:4px solid #9b59b6}
-tr[data-family="baseline"]  td:first-child{border-left:4px solid #95a5a6}
-.family-legend{font-size:11px;color:#666;margin-top:8px}
-.fl-wiki      {color:#2ecc71;margin-right:12px}
-.fl-acereason {color:#9b59b6;margin-right:12px}
-.fl-baseline  {color:#95a5a6}
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  margin: 0;
+  background: #f1f5f9;
+  color: #1e293b;
+  line-height: 1.5;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
 
-/* best/last toggle */
-.mode-toggle{display:flex;align-items:center;gap:4px;font-size:12px;color:#555}
-.ct-btn{background:#e8e8e8;border:none;border-radius:3px;padding:2px 8px;
-        cursor:pointer;font-size:11px}
-.ct-btn.active{background:#2d2d2d;color:#fff}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 
-/* ── top k ──────────────────────────────────────────────────────────────── */
-.topk-controls{font-size:13px;color:#555;margin-bottom:10px;display:flex;
-               align-items:center;gap:12px;flex-wrap:wrap}
-.topk-controls label{cursor:pointer;user-select:none}
-.domain-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
-.domain-card{background:#f8f9fb;border-radius:6px;padding:10px;min-width:0}
-.domain-card h4{margin:0 0 6px;font-size:12px;color:#444}
-.topk-list{margin:0;padding-left:18px;font-size:11px}
-.topk-item{display:flex;justify-content:space-between;gap:8px;padding:2px 0;
-           border-bottom:1px solid #eee}
-.tk-exp{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.tk-score{font-weight:600;color:#2a6db5;white-space:nowrap}
+/* ── Nav ──────────────────────────────────────────────────────────────────── */
+nav {
+  position: sticky;
+  top: 0;
+  background: #1e293b;
+  height: 52px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 200;
+  box-shadow: 0 1px 0 rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.2);
+}
 
-/* ── checkpoint charts ───────────────────────────────────────────────────── */
-.chart-size-label{font-size:12px;font-weight:600;color:#555;margin:16px 0 4px}
-.chart-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:4px}
-.chart-card{background:#f8f9fb;border-radius:6px;padding:8px;min-width:0}
+.nav-title {
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: .01em;
+  margin-right: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  flex-wrap: wrap;
+  overflow: hidden;
+}
+
+nav a {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+nav a:hover { background: rgba(255,255,255,.1); color: #e2e8f0; }
+nav a.active { background: rgba(99,102,241,.25); color: #a5b4fc; }
+
+.nav-date {
+  font-size: 11px;
+  color: #475569;
+  white-space: nowrap;
+  margin-left: auto;
+  flex-shrink: 0;
+  padding-left: 16px;
+}
+
+/* ── Layout ───────────────────────────────────────────────────────────────── */
+#content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Cards ────────────────────────────────────────────────────────────────── */
+section {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.05);
+}
+
+section h2 {
+  margin: 0 0 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  border-left: 3px solid #6366f1;
+  padding-left: 10px;
+  line-height: 1.4;
+}
+
+/* ── Loading ──────────────────────────────────────────────────────────────── */
+#loading-wrap {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 20px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-msg {
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.loading-msg b { color: #1e293b; }
+.loading-msg code {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: #6366f1;
+}
+
+/* ── Table controls ───────────────────────────────────────────────────────── */
+.tbl-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* ── Pill group (replaces checkboxes) ────────────────────────────────────── */
+.pill-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.pill-group-label {
+  font-size: 12px;
+  color: #64748b;
+  margin-right: 2px;
+}
+
+.pill-group button.pill {
+  background: #e2e8f0;
+  color: #64748b;
+  border: none;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  line-height: 1.6;
+}
+.pill-group button.pill.selected {
+  background: #6366f1;
+  color: #fff;
+}
+.pill-group button.pill:hover:not(.selected) {
+  background: #cbd5e1;
+  color: #1e293b;
+}
+
+/* ── Best / Last toggle ───────────────────────────────────────────────────── */
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.ct-btn {
+  background: #e2e8f0;
+  color: #64748b;
+  border: none;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  line-height: 1.6;
+}
+.ct-btn.active {
+  background: #6366f1;
+  color: #fff;
+}
+.ct-btn:hover:not(.active) {
+  background: #cbd5e1;
+  color: #1e293b;
+}
+
+/* ── Table ────────────────────────────────────────────────────────────────── */
+.tbl-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+table {
+  border-collapse: collapse;
+  font-size: 12px;
+  white-space: nowrap;
+  width: 100%;
+}
+
+thead th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: 10px 12px;
+  text-align: right;
+  border-bottom: 2px solid #e2e8f0;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+thead th:first-child,
+thead th:nth-child(2) { text-align: left; }
+
+thead th[data-asc],
+thead th[data-desc] {
+  background: #eef2ff;
+  color: #4338ca;
+}
+thead th[data-asc]::after  { content: ' ▲'; font-size: 9px; }
+thead th[data-desc]::after { content: ' ▼'; font-size: 9px; }
+
+tbody td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: right;
+  font-size: 12px;
+  color: #1e293b;
+  transition: background .1s;
+}
+tbody td:first-child,
+tbody td:nth-child(2) { text-align: left; }
+
+tbody tr:last-child td { border-bottom: none; }
+
+tbody tr:hover td { background: #f8fafc !important; }
+
+td.cell-best  {
+  outline: 2px solid #6366f1;
+  outline-offset: -2px;
+  font-weight: 700;
+}
+td.cell-worst {
+  outline: 2px solid #ef4444;
+  outline-offset: -2px;
+  font-weight: 700;
+}
+
+.child-row td { background: #fafafa; }
+.child-first {
+  padding-left: 32px !important;
+  border-left: 3px solid #e2e8f0;
+}
+
+/* ── Toggle button ────────────────────────────────────────────────────────── */
+.toggle {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 9px;
+  padding: 0 4px 0 0;
+  vertical-align: middle;
+  line-height: 1;
+  transition: color .15s;
+}
+.toggle:hover { color: #6366f1; }
+
+/* ── Family stripes ───────────────────────────────────────────────────────── */
+tr[data-family="wiki"]      td:first-child { border-left: 4px solid #10b981; }
+tr[data-family="acereason"] td:first-child { border-left: 4px solid #8b5cf6; }
+tr[data-family="baseline"]  td:first-child { border-left: 4px solid #94a3b8; }
+
+.family-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.fl-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+.fl-wiki      .fl-dot { background: #10b981; }
+.fl-acereason .fl-dot { background: #8b5cf6; }
+.fl-baseline  .fl-dot { background: #94a3b8; }
+
+/* ── Top K ────────────────────────────────────────────────────────────────── */
+.topk-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.topk-k-input {
+  width: 56px;
+  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  font-size: 13px;
+  color: #1e293b;
+  background: #fff;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+.topk-k-input::-webkit-inner-spin-button,
+.topk-k-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.topk-k-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+}
+
+.domain-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.domain-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  min-width: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+
+.domain-card-header {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  padding: 8px 12px;
+  border-radius: 8px 8px 0 0;
+}
+
+.domain-card-header h4 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: .02em;
+  text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.domain-card-body { padding: 8px; }
+
+.topk-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: topk-counter;
+}
+
+.topk-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 5px 4px;
+  border-bottom: 1px solid #f1f5f9;
+  counter-increment: topk-counter;
+}
+.topk-item:last-child { border-bottom: none; }
+.topk-item::before {
+  content: counter(topk-counter);
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  min-width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.tk-exp {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  font-size: 11px;
+  color: #334155;
+}
+
+.tk-score {
+  background: #eff6ff;
+  color: #3b82f6;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Checkpoint sections ──────────────────────────────────────────────────── */
+.chart-size-label {
+  display: inline-block;
+  background: #eff6ff;
+  color: #6366f1;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.chart-card {
+  background: #fafbfc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 8px 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Intersection observer for nav active state ───────────────────────────── */
+.section-anchor { scroll-margin-top: 64px; }
 </style>
 </head>
 <body>
 
-<nav id="nav"><span class="nav-title">BRIGHT Results</span></nav>
+<nav id="nav">
+  <span class="nav-title">BRIGHT Results</span>
+  <div class="nav-links" id="nav-links"></div>
+  <span class="nav-date" id="nav-date"></span>
+</nav>
+
 <div id="content">
-  <div id="loading" class="loading-msg">
-    Loading data.json…<br>
-    <small>If viewing locally, serve with: <code>python -m http.server</code></small>
+  <div id="loading-wrap">
+    <div class="spinner"></div>
+    <div class="loading-msg" id="loading">
+      Loading <code>data.json</code>…<br>
+      <small>If viewing locally, serve with: <code>python -m http.server</code></small>
+    </div>
   </div>
 </div>
 
@@ -101,18 +514,22 @@ fetch('./data.json')
     DATA._expMap = {};
     data.experiments.forEach(e => DATA._expMap[e.name] = e);
     DATA._fields = ['experiment', 'retriever_size', ...TASKS, 'avg'];
-    document.getElementById('loading').remove();
+    const wrap = document.getElementById('loading-wrap');
+    if (wrap) wrap.remove();
     document.title = 'BRIGHT Results';
     buildNav(data);
     buildTopK(data);
     buildExperimentsTable(data);
     buildCheckpointSections(data);
+    setupNavObserver();
   })
   .catch(err => {
+    const wrap = document.getElementById('loading-wrap');
+    if (wrap) wrap.querySelector('.spinner').remove();
     document.getElementById('loading').innerHTML =
       `<b>Could not load data.json.</b><br>
        If viewing locally, serve with: <code>python -m http.server</code><br>
-       <small style="color:#999">${err}</small>`;
+       <small style="color:#94a3b8;font-size:12px">${err}</small>`;
   });
 
 // ── utilities ─────────────────────────────────────────────────────────────────
@@ -204,7 +621,7 @@ function sortTable(th) {
 
 function makeFilterFn(table, block) {
   return () => {
-    const checked = new Set(Array.from(block.querySelectorAll('.size-filter:checked')).map(cb => cb.value));
+    const checked = new Set(Array.from(block.querySelectorAll('.pill-group button.selected')).map(btn => btn.dataset.size));
     const tbody = table.querySelector('tbody');
     tbody.querySelectorAll('tr:not(.child-row)').forEach(row => {
       const visible = checked.has(row.dataset.size);
@@ -221,17 +638,60 @@ function makeFilterFn(table, block) {
   };
 }
 
+// ── pill group helper ─────────────────────────────────────────────────────────
+function makePillGroup(sizes, onChange) {
+  const div = el('div', {cls: 'pill-group'});
+  sizes.forEach(size => {
+    const btn = el('button', {cls: 'pill selected', text: size});
+    btn.dataset.size = size;
+    btn.addEventListener('click', () => {
+      btn.classList.toggle('selected');
+      onChange();
+    });
+    div.appendChild(btn);
+  });
+  return div;
+}
+
 // ── nav ───────────────────────────────────────────────────────────────────────
 function buildNav(data) {
-  const nav = document.getElementById('nav');
+  const navLinks = document.getElementById('nav-links');
+  const navDate = document.getElementById('nav-date');
+
   [['topk', 'Top K'], ['experiments', 'Experiments']].forEach(([id, label]) => {
-    nav.appendChild(el('a', {href: '#' + id, text: label}));
+    navLinks.appendChild(el('a', {href: '#' + id, text: label}));
   });
   if (data.groups) {
     Object.keys(data.groups).sort().forEach(base => {
-      nav.appendChild(el('a', {href: '#' + base.replace(/[^a-zA-Z0-9]+/g, '-'), text: base}));
+      navLinks.appendChild(el('a', {href: '#' + base.replace(/[^a-zA-Z0-9]+/g, '-'), text: base}));
     });
   }
+
+  // Generated timestamp
+  const now = new Date();
+  navDate.textContent = 'Generated ' + now.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+}
+
+// ── Active nav link via IntersectionObserver ──────────────────────────────────
+function setupNavObserver() {
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('#nav-links a');
+  if (!sections.length || !links.length) return;
+
+  const map = {};
+  links.forEach(a => {
+    const id = a.getAttribute('href').slice(1);
+    map[id] = a;
+  });
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      const a = map[entry.target.id];
+      if (a) a.classList.toggle('active', entry.isIntersecting);
+    });
+  }, { rootMargin: '-52px 0px -60% 0px', threshold: 0 });
+
+  sections.forEach(s => io.observe(s));
 }
 
 // ── Top K ─────────────────────────────────────────────────────────────────────
@@ -244,16 +704,25 @@ function buildTopK(data) {
       .sort((a, b) => b.scores[task] - a.scores[task]);
   });
 
-  const kInput = el('input', {type: 'number', id: 'topk-k', value: '3', min: '1', max: '50',
-    style: 'width:50px;margin-left:4px', oninput: updateTopK});
-  const cb3B = el('input', {type: 'checkbox', cls: 'topk-filter', value: '3B', checked: true, onchange: updateTopK});
-  const cb8B = el('input', {type: 'checkbox', cls: 'topk-filter', value: '8B', checked: true, onchange: updateTopK});
+  const kInput = el('input', {
+    type: 'number',
+    id: 'topk-k',
+    value: '3',
+    min: '1',
+    max: '50',
+    cls: 'topk-k-input',
+    oninput: updateTopK
+  });
+
+  const pillGroup = makePillGroup(['3B', '8B'], updateTopK);
+  // Give topk filter pills the class topk-filter for updateTopK to query
+  pillGroup.querySelectorAll('button').forEach(b => b.classList.add('topk-filter'));
 
   const controls = el('div', {cls: 'topk-controls'},
-    el('label', {}, 'K:', kInput),
-    'Show:',
-    el('label', {}, cb3B, ' 3B'),
-    el('label', {}, cb8B, ' 8B'),
+    el('span', {cls: 'pill-group-label'}, 'Show top'),
+    kInput,
+    el('span', {cls: 'pill-group-label'}, 'results for:'),
+    pillGroup,
   );
 
   const grid = el('div', {cls: 'domain-grid', id: 'topk-grid'});
@@ -265,18 +734,27 @@ function buildTopK(data) {
         el('span', {cls: 'tk-score', text: exp.scores[task].toFixed(2)}),
       ));
     });
-    grid.appendChild(el('div', {cls: 'domain-card'},
-      el('h4', {text: task.replace(/_/g, ' ')}), ol));
+    const card = el('div', {cls: 'domain-card'},
+      el('div', {cls: 'domain-card-header'},
+        el('h4', {text: task.replace(/_/g, ' ')})
+      ),
+      el('div', {cls: 'domain-card-body'}, ol)
+    );
+    grid.appendChild(card);
   });
 
-  const section = el('section', {id: 'topk'}, el('h2', {text: 'Top K per Domain'}), controls, grid);
+  const section = el('section', {id: 'topk', cls: 'section-anchor'},
+    el('h2', {text: 'Top K per Domain'}),
+    controls,
+    grid
+  );
   document.getElementById('content').appendChild(section);
   updateTopK();
 }
 
 function updateTopK() {
   const k = Math.max(1, parseInt(document.getElementById('topk-k')?.value) || 3);
-  const checked = new Set(Array.from(document.querySelectorAll('.topk-filter:checked')).map(cb => cb.value));
+  const checked = new Set(Array.from(document.querySelectorAll('.topk-filter.selected')).map(btn => btn.dataset.size));
   document.querySelectorAll('.topk-list').forEach(list => {
     let shown = 0;
     list.querySelectorAll('.topk-item').forEach(item => {
@@ -315,17 +793,20 @@ function buildExperimentsTable(data) {
   }).sort((a, b) => (b.bestExp.avg || 0) - (a.bestExp.avg || 0));
 
   // Build section
-  const section = el('section', {id: 'experiments'}, el('h2', {text: 'Experiments'}));
+  const section = el('section', {id: 'experiments', cls: 'section-anchor'},
+    el('h2', {text: 'Experiments'})
+  );
   const block = el('div', {cls: 'tbl-block'});
   section.appendChild(block);
 
-  // Controls
-  const cb3B = el('input', {type: 'checkbox', cls: 'size-filter', value: '3B', checked: true});
-  const cb8B = el('input', {type: 'checkbox', cls: 'size-filter', value: '8B', checked: true});
+  // Controls — pill group replaces checkboxes
+  const pillGroup = makePillGroup(['3B', '8B'], () => doFilter());
+
   const bestBtn = el('button', {cls: 'ct-btn active', text: 'Best'});
   const lastBtn = el('button', {cls: 'ct-btn',        text: 'Last'});
   const controls = el('div', {cls: 'tbl-controls'},
-    el('span', {}, 'Show:', el('label', {}, cb3B, ' 3B'), el('label', {}, cb8B, ' 8B')),
+    el('span', {cls: 'pill-group-label'}, 'Filter size:'),
+    pillGroup,
     el('span', {cls: 'mode-toggle'}, 'Parent row:', bestBtn, lastBtn),
   );
   block.appendChild(controls);
@@ -399,17 +880,19 @@ function buildExperimentsTable(data) {
   block.appendChild(wrap);
 
   // Family legend
-  block.appendChild(el('div', {cls: 'family-legend', html:
-    '<span class="fl-wiki">■ wiki</span>' +
-    '<span class="fl-acereason">■ acereason</span>' +
-    '<span class="fl-baseline">■ baseline</span>'}));
+  block.appendChild(el('div', {cls: 'family-legend'},
+    el('span', {cls: 'fl-wiki'},
+      el('span', {cls: 'fl-dot'}), 'wiki'),
+    el('span', {cls: 'fl-acereason'},
+      el('span', {cls: 'fl-dot'}), 'acereason'),
+    el('span', {cls: 'fl-baseline'},
+      el('span', {cls: 'fl-dot'}), 'baseline'),
+  ));
 
   document.getElementById('content').appendChild(section);
 
   // Wire interactions (after table is in DOM)
   const doFilter = makeFilterFn(table, block);
-  cb3B.addEventListener('change', doFilter);
-  cb8B.addEventListener('change', doFilter);
 
   bestBtn.addEventListener('click', () => {
     bestBtn.classList.add('active'); lastBtn.classList.remove('active');
@@ -430,7 +913,7 @@ function toggleRow(gid, tbody, table, block) {
   const expanding = btn.textContent.trim() === '▶';
   btn.textContent = expanding ? '▼' : '▶';
   if (expanding) {
-    const checked = new Set(Array.from(block.querySelectorAll('.size-filter:checked')).map(cb => cb.value));
+    const checked = new Set(Array.from(block.querySelectorAll('.pill-group button.selected')).map(btn => btn.dataset.size));
     children.forEach(r => r.style.display = checked.has(r.dataset.size) ? '' : 'none');
   } else {
     children.forEach(r => r.style.display = 'none');
@@ -466,7 +949,7 @@ function buildCheckpointSections(data) {
 
   Object.entries(data.groups).sort((a, b) => a[0].localeCompare(b[0])).forEach(([base, sizeGroups]) => {
     const sid = base.replace(/[^a-zA-Z0-9]+/g, '-');
-    const section = el('section', {id: sid}, el('h2', {text: base}));
+    const section = el('section', {id: sid, cls: 'section-anchor'}, el('h2', {text: base}));
 
     // Flat checkpoint table (all sizes, sorted by step)
     const allExps = Object.values(sizeGroups).flat()
@@ -523,7 +1006,7 @@ function buildFlatTable(exps, tasks) {
 }
 
 function buildChartGrid(base, size, exps, tasks, metric) {
-  const color = size === '8B' ? '#e07b39' : '#4a90d9';
+  const color = size === '8B' ? '#8b5cf6' : '#6366f1';
   const grid = el('div', {cls: 'chart-grid'});
   const inits = [];
 
@@ -544,12 +1027,14 @@ function buildChartGrid(base, size, exps, tasks, metric) {
       Plotly.newPlot(cid, [{
         type: 'scatter', x: steps, y: ys,
         mode: 'lines+markers', name: size,
-        line: {color, width: 2}, marker: {size: 5},
+        line: {color, width: 2}, marker: {size: 5, color},
         hovertemplate: '%{x}: %{y:.2f}<extra>' + size + '</extra>',
       }], {
-        title: {text: task.replace(/_/g, ' '), font: {size: 11}, x: 0.5},
-        xaxis: {title: 'step', titlefont: {size: 9}, tickfont: {size: 8}},
-        yaxis: {title: metric, titlefont: {size: 9}, tickfont: {size: 8}},
+        title: {text: task.replace(/_/g, ' '), font: {size: 11, color: '#334155', family: 'system-ui'}, x: 0.5},
+        xaxis: {title: 'step', titlefont: {size: 9, color: '#64748b'}, tickfont: {size: 8, color: '#94a3b8'},
+                gridcolor: '#f1f5f9', linecolor: '#e2e8f0', zerolinecolor: '#e2e8f0'},
+        yaxis: {title: metric, titlefont: {size: 9, color: '#64748b'}, tickfont: {size: 8, color: '#94a3b8'},
+                gridcolor: '#f1f5f9', linecolor: '#e2e8f0', zerolinecolor: '#e2e8f0'},
         margin: {l: 45, r: 10, t: 30, b: 45},
         plot_bgcolor: '#fff', paper_bgcolor: 'rgba(0,0,0,0)', height: 200,
       }, {responsive: true, displayModeBar: false});
