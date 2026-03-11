@@ -409,25 +409,51 @@ function buildStats(data) {
 }
 
 // ── Build: Top K ─────────────────────────────────────────────────────────────
+let topkMode = 'best';
+
 function buildTopK(data) {
+  const bestSet = new Set(), lastSet = new Set();
+  const grps = {};
+  for (const exp of data.experiments) {
+    const key = baseName(exp.name) + '::' + exp.retriever_size;
+    (grps[key] ??= []).push(exp);
+  }
+  for (const exps of Object.values(grps)) {
+    exps.sort((a, b) => (a.checkpoint_step || 0) - (b.checkpoint_step || 0));
+    const best = exps.reduce((a, b) => (a.avg || 0) >= (b.avg || 0) ? a : b);
+    bestSet.add(best.name);
+    lastSet.add(exps[exps.length - 1].name);
+  }
+
   const rankings = {};
   for (const t of data.meta.tasks)
     rankings[t] = [...data.experiments].filter(e => e.scores[t] != null).sort((a, b) => b.scores[t] - a.scores[t]);
 
   const kInput = h('input', {type: 'number', id: 'topk-k', value: '3', min: '1', max: '50', cls: 'k-input', oninput: updateTopK});
-  const pills = h('div', {cls: 'pill-group', id: 'topk-sizes'});
+  const sizePills = h('div', {cls: 'pill-group', id: 'topk-sizes'});
   for (const s of ['3B', '8B'])
-    pills.appendChild(h('button', {cls: 'pill on', text: s, dataset: {size: s},
+    sizePills.appendChild(h('button', {cls: 'pill on', text: s, dataset: {size: s},
       onclick: e => { e.target.classList.toggle('on'); updateTopK(); }}));
+
+  const bestBtn = h('button', {cls: 'toggle-btn on', text: 'Best', onclick: () => {
+    topkMode = 'best'; bestBtn.classList.add('on'); lastBtn.classList.remove('on'); updateTopK();
+  }});
+  const lastBtn = h('button', {cls: 'toggle-btn', text: 'Last', onclick: () => {
+    topkMode = 'last'; lastBtn.classList.add('on'); bestBtn.classList.remove('on'); updateTopK();
+  }});
 
   const grid = h('div', {cls: 'domain-grid', id: 'topk-grid'});
   for (const t of data.meta.tasks) {
     const list = h('ol', {cls: 'topk-list'});
-    for (const exp of rankings[t])
-      list.appendChild(h('li', {cls: 'topk-item', dataset: {size: exp.retriever_size}},
+    for (const exp of rankings[t]) {
+      const isBest = bestSet.has(exp.name), isLast = lastSet.has(exp.name);
+      list.appendChild(h('li', {cls: 'topk-item', dataset: {
+        size: exp.retriever_size, best: isBest ? '1' : '', last: isLast ? '1' : ''
+      }},
         h('span', {cls: 'tk-name', title: exp.name, text: exp.name}),
         h('span', {cls: 'tk-score', text: exp.scores[t].toFixed(2)})
       ));
+    }
     const task = t;
     grid.appendChild(h('div', {cls: 'domain-card'},
       h('div', {cls: 'domain-hdr', onclick: () => showDomainPlot(task)}, h('h4', {text: t.replace(/_/g, ' ')})),
@@ -438,7 +464,11 @@ function buildTopK(data) {
   requestAnimationFrame(updateTopK);
   return h('div', {cls: 'card', id: 'topk'},
     h('div', {cls: 'card-title', text: 'Top K per Domain'}),
-    h('div', {cls: 'toolbar'}, h('span', {cls: 'toolbar-label', text: 'Show top'}), kInput, h('span', {cls: 'toolbar-label', text: 'per domain'}), pills),
+    h('div', {cls: 'toolbar'},
+      h('span', {cls: 'toolbar-label', text: 'Show top'}), kInput,
+      h('span', {cls: 'toolbar-label', text: 'per domain'}), sizePills,
+      h('span', {cls: 'toolbar-label', text: 'Checkpoint:'}), h('div', {cls: 'toggle-group'}, bestBtn, lastBtn)
+    ),
     grid
   );
 }
@@ -449,7 +479,9 @@ function updateTopK() {
   for (const list of document.querySelectorAll('.topk-list')) {
     let shown = 0;
     for (const item of list.querySelectorAll('.topk-item')) {
-      const ok = on.has(item.dataset.size) && shown < k;
+      const sizeOk = on.has(item.dataset.size);
+      const modeOk = topkMode === 'best' ? item.dataset.best === '1' : item.dataset.last === '1';
+      const ok = sizeOk && modeOk && shown < k;
       item.style.display = ok ? '' : 'none';
       if (ok) shown++;
     }
@@ -457,7 +489,7 @@ function updateTopK() {
 }
 
 // ── Domain Scatter Modal ─────────────────────────────────────────────────────
-const famColors = {wiki: '#10b981', acereason: '#8b5cf6', baseline: '#94a3b8'};
+const sizeColors = {'3B': '#6366f1', '8B': '#f59e0b'};
 const sizeSymbols = {'3B': 'circle', '8B': 'diamond'};
 
 function showDomainPlot(task) {
@@ -477,7 +509,7 @@ function showDomainPlot(task) {
 
   const names = sorted.map(e => e.name);
   const scores = sorted.map(e => Math.round(e.scores[task] * 100) / 100);
-  const colors = sorted.map(e => famColors[expFamily(e.name)] || '#94a3b8');
+  const colors = sorted.map(e => sizeColors[e.retriever_size] || '#6366f1');
   const symbols = sorted.map(e => sizeSymbols[e.retriever_size] || 'circle');
 
   const chartH = Math.max(400, sorted.length * 28 + 80);
@@ -485,11 +517,8 @@ function showDomainPlot(task) {
   const chartDiv = h('div', {id: cid, style: {height: chartH + 'px', width: '100%'}});
 
   const legend = h('div', {cls: 'legend', style: {marginBottom: '12px'}},
-    ...Object.entries(famColors).map(([n, c]) =>
-      h('span', null, h('span', {cls: 'legend-dot', style: {background: c}}), n)
-    ),
-    h('span', {style: {marginLeft: '12px'}}, '\u25CF 3B'),
-    h('span', null, '\u25C6 8B'),
+    h('span', null, h('span', {cls: 'legend-dot', style: {background: sizeColors['3B']}}), '\u25CF 3B'),
+    h('span', null, h('span', {cls: 'legend-dot', style: {background: sizeColors['8B']}}), '\u25C6 8B'),
   );
 
   const backdrop = h('div', {cls: 'modal-backdrop', onclick: e => { if (e.target === backdrop) backdrop.remove(); }},
