@@ -4,966 +4,713 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BRIGHT Results</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <style>
-/* ── Reset & base ─────────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
-
+:root {
+  --bg: #f8fafc;
+  --surface: #fff;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --text: #0f172a;
+  --muted: #64748b;
+  --faint: #94a3b8;
+  --primary: #6366f1;
+  --primary-bg: #eef2ff;
+  --primary-dark: #4338ca;
+  --nav-bg: #0f172a;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-
 body {
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  margin: 0;
-  background: #f1f5f9;
-  color: #1e293b;
-  line-height: 1.5;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  background: var(--bg); color: var(--text); line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
-
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+* { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
 
-/* ── Nav ──────────────────────────────────────────────────────────────────── */
+/* Nav */
 nav {
-  position: sticky;
-  top: 0;
-  background: #1e293b;
-  height: 52px;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  z-index: 200;
-  box-shadow: 0 1px 0 rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.2);
+  position: sticky; top: 0; z-index: 100;
+  background: var(--nav-bg); height: 54px; padding: 0 24px;
+  display: flex; align-items: center; gap: 6px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.3);
+}
+.nav-brand { color: #fff; font-weight: 700; font-size: 15px; margin-right: 16px; flex-shrink: 0; }
+.nav-tabs { display: flex; gap: 2px; }
+.nav-tab {
+  color: var(--faint); font-size: 13px; font-weight: 500;
+  padding: 6px 14px; border-radius: 8px; cursor: pointer;
+  border: none; background: none; transition: all .15s;
+}
+.nav-tab:hover { background: rgba(255,255,255,.08); color: #e2e8f0; }
+.nav-tab.active { background: rgba(99,102,241,.2); color: #a5b4fc; }
+.nav-search {
+  margin-left: auto; position: relative; flex-shrink: 0;
+}
+.nav-search input {
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px; color: #e2e8f0; font-size: 12px;
+  padding: 6px 12px 6px 30px; width: 190px; outline: none; transition: all .2s;
+}
+.nav-search input::placeholder { color: var(--faint); }
+.nav-search input:focus { background: rgba(255,255,255,.12); border-color: rgba(99,102,241,.5); width: 250px; }
+.nav-search-icon {
+  position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+  color: var(--faint); pointer-events: none;
+}
+.nav-meta { font-size: 11px; color: #475569; flex-shrink: 0; margin-left: 12px; }
+
+/* Layout */
+#content { max-width: 1440px; margin: 0 auto; padding: 20px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Cards */
+.card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 20px 24px; box-shadow: var(--shadow); margin-bottom: 16px;
+}
+.card-title {
+  font-size: 14px; font-weight: 600; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title::before {
+  content: ''; width: 3px; height: 18px;
+  background: var(--primary); border-radius: 2px; flex-shrink: 0;
 }
 
-.nav-title {
-  color: #fff;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: .01em;
-  margin-right: 12px;
-  white-space: nowrap;
-  flex-shrink: 0;
+/* Stats */
+.stats-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 20px; text-align: center;
+  min-width: 100px; box-shadow: var(--shadow);
+}
+.stat-val { font-size: 1.4rem; font-weight: 700; color: var(--primary); line-height: 1.2; }
+.stat-lbl {
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--muted); margin-top: 2px;
 }
 
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex: 1;
-  flex-wrap: wrap;
-  overflow: hidden;
+/* Toolbar / Controls */
+.toolbar {
+  display: flex; align-items: center; gap: 14px;
+  flex-wrap: wrap; margin-bottom: 14px; font-size: 12px; color: var(--muted);
 }
+.toolbar-label { font-weight: 500; }
+.pill-group { display: flex; gap: 4px; }
+.pill {
+  background: var(--border); color: var(--muted); border: none;
+  border-radius: 999px; padding: 4px 14px; font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all .15s; line-height: 1.5;
+}
+.pill.on { background: var(--primary); color: #fff; }
+.pill:hover:not(.on) { background: #cbd5e1; color: var(--text); }
+.toggle-group { display: flex; background: var(--border); border-radius: 999px; padding: 2px; }
+.toggle-btn {
+  background: none; border: none; border-radius: 999px;
+  padding: 4px 14px; font-size: 12px; font-weight: 500;
+  cursor: pointer; color: var(--muted); transition: all .15s;
+}
+.toggle-btn.on { background: var(--primary); color: #fff; }
 
-nav a {
-  color: #94a3b8;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 10px;
-  border-radius: 6px;
-  transition: background .15s, color .15s;
-  white-space: nowrap;
-}
-nav a:hover { background: rgba(255,255,255,.1); color: #e2e8f0; }
-nav a.active { background: rgba(99,102,241,.25); color: #a5b4fc; }
-
-.nav-date {
-  font-size: 11px;
-  color: #475569;
-  white-space: nowrap;
-  margin-left: auto;
-  flex-shrink: 0;
-  padding-left: 16px;
-}
-
-/* ── Layout ───────────────────────────────────────────────────────────────── */
-#content {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 24px 20px 48px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* ── Cards ────────────────────────────────────────────────────────────────── */
-section {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.05);
-}
-
-section h2 {
-  margin: 0 0 18px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1e293b;
-  border-left: 3px solid #6366f1;
-  padding-left: 10px;
-  line-height: 1.4;
-}
-
-/* ── Loading ──────────────────────────────────────────────────────────────── */
-#loading-wrap {
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 60px 20px;
-}
-
-.spinner {
-  width: 36px;
-  height: 36px;
-  border: 3px solid #e2e8f0;
-  border-top-color: #6366f1;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.loading-msg {
-  text-align: center;
-  color: #64748b;
-  font-size: 14px;
-  line-height: 1.8;
-}
-.loading-msg b { color: #1e293b; }
-.loading-msg code {
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  padding: 2px 7px;
-  border-radius: 5px;
-  font-size: 12px;
-  color: #6366f1;
-}
-
-/* ── Table controls ───────────────────────────────────────────────────────── */
-.tbl-controls {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-  font-size: 13px;
-  color: #64748b;
-}
-
-/* ── Pill group (replaces checkboxes) ────────────────────────────────────── */
-.pill-group {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-
-.pill-group-label {
-  font-size: 12px;
-  color: #64748b;
-  margin-right: 2px;
-}
-
-.pill-group button.pill {
-  background: #e2e8f0;
-  color: #64748b;
-  border: none;
-  border-radius: 999px;
-  padding: 3px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background .15s, color .15s;
-  line-height: 1.6;
-}
-.pill-group button.pill.selected {
-  background: #6366f1;
-  color: #fff;
-}
-.pill-group button.pill:hover:not(.selected) {
-  background: #cbd5e1;
-  color: #1e293b;
-}
-
-/* ── Best / Last toggle ───────────────────────────────────────────────────── */
-.mode-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.ct-btn {
-  background: #e2e8f0;
-  color: #64748b;
-  border: none;
-  border-radius: 999px;
-  padding: 3px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background .15s, color .15s;
-  line-height: 1.6;
-}
-.ct-btn.active {
-  background: #6366f1;
-  color: #fff;
-}
-.ct-btn:hover:not(.active) {
-  background: #cbd5e1;
-  color: #1e293b;
-}
-
-/* ── Table ────────────────────────────────────────────────────────────────── */
+/* Tables */
 .tbl-wrap {
-  overflow-x: auto;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  overflow-x: auto; border: 1px solid var(--border); border-radius: 10px;
 }
-
-table {
-  border-collapse: collapse;
-  font-size: 12px;
-  white-space: nowrap;
-  width: 100%;
-}
-
+table { border-collapse: collapse; font-size: 12px; white-space: nowrap; width: 100%; }
 thead th {
-  background: #f8fafc;
-  color: #475569;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  padding: 10px 12px;
-  text-align: right;
-  border-bottom: 2px solid #e2e8f0;
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-  transition: background .12s, color .12s;
+  position: sticky; top: 0; z-index: 2;
+  background: #f8fafc; color: #475569; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em; padding: 10px 12px;
+  text-align: right; border-bottom: 2px solid var(--border);
+  cursor: pointer; user-select: none; transition: all .12s;
 }
-thead th:first-child,
-thead th:nth-child(2) { text-align: left; }
-
-thead th[data-asc],
-thead th[data-desc] {
-  background: #eef2ff;
-  color: #4338ca;
-}
-thead th[data-asc]::after  { content: ' ▲'; font-size: 9px; }
-thead th[data-desc]::after { content: ' ▼'; font-size: 9px; }
-
+thead th:first-child, thead th:nth-child(2) { text-align: left; }
+thead th.sorted { background: var(--primary-bg); color: var(--primary-dark); }
+thead th.asc::after { content: ' \2191'; font-size: 10px; }
+thead th.desc::after { content: ' \2193'; font-size: 10px; }
 tbody td {
-  padding: 8px 12px;
-  border-bottom: 1px solid #f1f5f9;
-  text-align: right;
-  font-size: 12px;
-  color: #1e293b;
+  padding: 7px 12px; border-bottom: 1px solid var(--border-light);
+  text-align: right; font-size: 12px; font-variant-numeric: tabular-nums;
   transition: background .1s;
 }
-tbody td:first-child,
-tbody td:nth-child(2) { text-align: left; }
-
+tbody td:first-child, tbody td:nth-child(2) { text-align: left; }
 tbody tr:last-child td { border-bottom: none; }
-
 tbody tr:hover td { background: #f8fafc !important; }
-
-td.cell-best  {
-  outline: 2px solid #6366f1;
-  outline-offset: -2px;
-  font-weight: 700;
-}
-td.cell-worst {
-  outline: 2px solid #ef4444;
-  outline-offset: -2px;
-  font-weight: 700;
-}
-
-.child-row td { background: #fafafa; }
-.child-first {
-  padding-left: 32px !important;
-  border-left: 3px solid #e2e8f0;
-}
-
-/* ── Toggle button ────────────────────────────────────────────────────────── */
-.toggle {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  font-size: 9px;
-  padding: 0 4px 0 0;
-  vertical-align: middle;
-  line-height: 1;
-  transition: color .15s;
-}
-.toggle:hover { color: #6366f1; }
-
-/* ── Family stripes ───────────────────────────────────────────────────────── */
-tr[data-family="wiki"]      td:first-child { border-left: 4px solid #10b981; }
-tr[data-family="acereason"] td:first-child { border-left: 4px solid #8b5cf6; }
-tr[data-family="baseline"]  td:first-child { border-left: 4px solid #94a3b8; }
-
-.family-legend {
-  display: flex;
-  gap: 16px;
-  font-size: 11px;
-  color: #64748b;
-  margin-top: 12px;
-  flex-wrap: wrap;
-}
-.fl-dot {
+td.best { outline: 2px solid var(--primary); outline-offset: -2px; font-weight: 700; }
+td.worst { outline: 2px solid #ef4444; outline-offset: -2px; font-weight: 700; }
+.child-row td { background: #fafbfc; }
+.child-indent { padding-left: 28px !important; border-left: 3px solid var(--border); }
+.expand-btn {
+  background: none; border: none; color: var(--faint);
+  cursor: pointer; font-size: 10px; padding: 0 4px 0 0;
+  vertical-align: middle; transition: color .15s, transform .2s;
   display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 5px;
-  vertical-align: middle;
-  position: relative;
-  top: -1px;
 }
-.fl-wiki      .fl-dot { background: #10b981; }
-.fl-acereason .fl-dot { background: #8b5cf6; }
-.fl-baseline  .fl-dot { background: #94a3b8; }
+.expand-btn:hover { color: var(--primary); }
+.expand-btn.open { transform: rotate(90deg); }
 
-/* ── Top K ────────────────────────────────────────────────────────────────── */
-.topk-controls {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  font-size: 13px;
-  color: #64748b;
-  margin-bottom: 16px;
+/* Family stripes */
+tr[data-fam="wiki"] td:first-child { border-left: 3px solid #10b981; }
+tr[data-fam="acereason"] td:first-child { border-left: 3px solid #8b5cf6; }
+tr[data-fam="baseline"] td:first-child { border-left: 3px solid #94a3b8; }
+.legend { display: flex; gap: 16px; font-size: 11px; color: var(--muted); margin-top: 12px; }
+.legend-dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; margin-right: 5px; vertical-align: middle;
 }
 
-.topk-k-input {
-  width: 56px;
-  padding: 4px 8px;
-  border: 1px solid #e2e8f0;
-  border-radius: 7px;
-  font-size: 13px;
-  color: #1e293b;
-  background: #fff;
-  outline: none;
-  transition: border-color .15s, box-shadow .15s;
-  text-align: center;
-  -moz-appearance: textfield;
-}
-.topk-k-input::-webkit-inner-spin-button,
-.topk-k-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.topk-k-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,.12);
-}
-
+/* Top K */
 .domain-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 14px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
 }
-
-.domain-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  overflow: hidden;
-  min-width: 0;
-  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+.domain-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.domain-hdr { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 8px 12px; }
+.domain-hdr h4 {
+  font-size: 11px; font-weight: 600; color: #fff;
+  text-transform: capitalize; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
 }
-
-.domain-card-header {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  padding: 8px 12px;
-  border-radius: 8px 8px 0 0;
-}
-
-.domain-card-header h4 {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 600;
-  color: #fff;
-  letter-spacing: .02em;
-  text-transform: capitalize;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.domain-card-body { padding: 8px; }
-
-.topk-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: topk-counter;
-}
-
+.domain-body { padding: 6px 8px; }
+.topk-list { list-style: none; counter-reset: rank; }
 .topk-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  padding: 5px 4px;
-  border-bottom: 1px solid #f1f5f9;
-  counter-increment: topk-counter;
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px; border-bottom: 1px solid var(--border-light); counter-increment: rank;
 }
 .topk-item:last-child { border-bottom: none; }
 .topk-item::before {
-  content: counter(topk-counter);
-  font-size: 10px;
-  font-weight: 700;
-  color: #94a3b8;
-  min-width: 14px;
-  text-align: center;
-  flex-shrink: 0;
+  content: counter(rank); font-size: 10px; font-weight: 700;
+  color: var(--faint); min-width: 14px; text-align: center;
 }
-
-.tk-exp {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-  font-size: 11px;
-  color: #334155;
+.tk-name {
+  flex: 1; font-size: 11px; color: #334155;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-
 .tk-score {
-  background: #eff6ff;
-  color: #3b82f6;
-  border-radius: 999px;
-  padding: 1px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
+  background: var(--primary-bg); color: var(--primary);
+  border-radius: 999px; padding: 1px 8px; font-size: 11px;
+  font-weight: 600; flex-shrink: 0;
+}
+.k-input {
+  width: 50px; padding: 4px 8px; border: 1px solid var(--border);
+  border-radius: 6px; font-size: 12px; text-align: center; outline: none;
+  -moz-appearance: textfield;
+}
+.k-input::-webkit-inner-spin-button,
+.k-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.k-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+
+/* Training Curves */
+.curves-controls {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 16px 20px; box-shadow: var(--shadow); margin-bottom: 16px;
+}
+.size-label {
+  display: inline-block; background: var(--primary-bg); color: var(--primary);
+  border-radius: 6px; padding: 4px 10px; font-size: 12px;
+  font-weight: 600; margin: 12px 0 8px;
+}
+.chart-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px;
+}
+.chart-card {
+  background: #fafbfc; border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 8px 6px; overflow: hidden;
 }
 
-/* ── Stats bar ────────────────────────────────────────────────────────────── */
-.stats-bar {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+/* Loading */
+#loading {
+  min-height: 60vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px; padding: 60px 20px;
 }
-
-.stat-chip {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 12px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  min-width: 100px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+.spinner {
+  width: 32px; height: 32px; border: 3px solid var(--border);
+  border-top-color: var(--primary); border-radius: 50%;
+  animation: spin .7s linear infinite;
 }
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #6366f1;
-  line-height: 1;
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { text-align: center; color: var(--muted); font-size: 13px; }
+.loading-text code {
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 2px 6px; border-radius: 4px; font-size: 11px; color: var(--primary);
 }
-
-.stat-label {
-  font-size: 11px;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-}
-
-/* ── Intersection observer for nav active state ───────────────────────────── */
-.section-anchor { scroll-margin-top: 64px; }
+.section-anchor { scroll-margin-top: 68px; }
 </style>
 </head>
 <body>
 
-<nav id="nav">
-  <span class="nav-title">BRIGHT Results</span>
-  <div class="nav-links" id="nav-links"></div>
-  <span class="nav-date" id="nav-date"></span>
+<nav>
+  <span class="nav-brand">BRIGHT</span>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-tab="overview">Overview</button>
+    <button class="nav-tab" data-tab="curves">Training Curves</button>
+  </div>
+  <div class="nav-search">
+    <svg class="nav-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+    </svg>
+    <input type="text" id="search" placeholder="Search experiments..." />
+  </div>
+  <span class="nav-meta" id="nav-meta"></span>
 </nav>
 
 <div id="content">
-  <div id="loading-wrap">
+  <div id="loading">
     <div class="spinner"></div>
-    <div class="loading-msg" id="loading">
-      Loading <code>data.json</code>…<br>
-      <small>If viewing locally, serve with: <code>python -m http.server</code></small>
+    <div class="loading-text">
+      Loading <code>data.json</code>...<br>
+      <small>If local, serve with <code>python -m http.server</code></small>
     </div>
   </div>
 </div>
 
 <script>
-// ── globals ──────────────────────────────────────────────────────────────────
-let TASKS = [], METRIC = 'NDCG@10', DATA = null;
+let DATA = null, searchQuery = '', chartInits = [];
 
-// ── boot ─────────────────────────────────────────────────────────────────────
-fetch('./data.json')
-  .then(r => { if (!r.ok) throw new Error(r.status + ' ' + r.statusText); return r.json(); })
-  .then(data => {
-    DATA = data;
-    TASKS = data.meta.tasks;
-    METRIC = data.meta.metric;
-    DATA._expMap = {};
-    data.experiments.forEach(e => DATA._expMap[e.name] = e);
-    DATA._fields = ['experiment', 'retriever_size', ...TASKS, 'avg'];
-    const wrap = document.getElementById('loading-wrap');
-    if (wrap) wrap.remove();
-    document.title = 'BRIGHT Results';
-    buildNav(data);
-    buildStatsBar(data);
-    buildTopK(data);
-    buildExperimentsTable(data);
-    setupNavObserver();
-  })
-  .catch(err => {
-    const wrap = document.getElementById('loading-wrap');
-    if (wrap) wrap.querySelector('.spinner').remove();
-    document.getElementById('loading').innerHTML =
-      `<b>Could not load data.json.</b><br>
-       If viewing locally, serve with: <code>python -m http.server</code><br>
-       <small style="color:#94a3b8;font-size:12px">${err}</small>`;
-  });
+// ── DOM helper ───────────────────────────────────────────────────────────────
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'cls') el.className = v;
+    else if (k === 'text') el.textContent = v;
+    else if (k === 'html') el.innerHTML = v;
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k === 'dataset') Object.assign(el.dataset, v);
+    else el.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null)
+    el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  return el;
+}
 
-// ── utilities ─────────────────────────────────────────────────────────────────
-function cellBg(t) { return `hsl(${Math.round(t * 120)},55%,82%)`; }
+function cellBg(t) { return `hsl(${Math.round(t * 120)}, 50%, 84%)`; }
 
-function fmt(v, field) {
-  if (v == null) return '';
-  if (field === 'experiment' || field === 'retriever_size') return v;
-  return typeof v === 'number' ? v.toFixed(2) : v;
+function expFamily(name) {
+  const b = name.replace(/\/checkpoint-.*/, '');
+  return b.startsWith('wiki') ? 'wiki' : b.startsWith('acereason') ? 'acereason' : 'baseline';
 }
 
 function expVal(exp, field) {
-  if (field === 'experiment')     return exp.name;
+  if (field === 'experiment') return exp.name;
   if (field === 'retriever_size') return exp.retriever_size;
-  if (field === 'avg')            return exp.avg != null ? exp.avg.toFixed(2) : '';
+  if (field === 'avg') return exp.avg != null ? exp.avg.toFixed(2) : '';
   const s = exp.scores[field];
   return s != null ? s.toFixed(2) : '';
 }
 
-function expFamily(name) {
-  const base = name.replace(/\/checkpoint-.*/, '');
-  if (base.startsWith('wiki'))      return 'wiki';
-  if (base.startsWith('acereason')) return 'acereason';
-  return 'baseline';
-}
-
-function el(tag, props = {}, ...children) {
-  const e = document.createElement(tag);
-  Object.entries(props).forEach(([k, v]) => {
-    if (k === 'cls')  e.className = v;
-    else if (k === 'html') e.innerHTML = v;
-    else if (k === 'text') e.textContent = v;
-    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
-    else e[k] = v;
-  });
-  children.flat().forEach(c => c && e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
-  return e;
-}
-
-// ── recolorTable ─────────────────────────────────────────────────────────────
-function recolorTable(tbl) {
+// ── Table heatmap ────────────────────────────────────────────────────────────
+function recolor(tbl) {
   const tbody = tbl.querySelector('tbody');
-  const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => r.style.display !== 'none');
-  const ncols = tbl.querySelector('thead tr').cells.length;
-  const mins = new Array(ncols).fill(Infinity);
-  const maxs = new Array(ncols).fill(-Infinity);
-  rows.forEach(row => {
-    Array.from(row.cells).forEach((cell, i) => {
-      const v = parseFloat(cell.dataset.val);
-      if (!isNaN(v)) { mins[i] = Math.min(mins[i], v); maxs[i] = Math.max(maxs[i], v); }
-    });
-  });
-  tbody.querySelectorAll('tr').forEach(row => {
-    const visible = row.style.display !== 'none';
-    Array.from(row.cells).forEach((cell, i) => {
-      cell.classList.remove('cell-best', 'cell-worst');
-      const v = parseFloat(cell.dataset.val);
-      if (!isNaN(v) && maxs[i] > mins[i] && visible) {
-        cell.style.background = cellBg((v - mins[i]) / (maxs[i] - mins[i]));
-        if (v === maxs[i]) cell.classList.add('cell-best');
-        if (v === mins[i]) cell.classList.add('cell-worst');
-      } else {
-        cell.style.background = '';
-      }
-    });
+  const rows = [...tbody.querySelectorAll('tr')].filter(r => r.style.display !== 'none');
+  const n = tbl.querySelector('thead tr').cells.length;
+  const mins = Array(n).fill(Infinity), maxs = Array(n).fill(-Infinity);
+  for (const row of rows) for (let i = 0; i < row.cells.length; i++) {
+    const v = parseFloat(row.cells[i].dataset.val);
+    if (!isNaN(v)) { mins[i] = Math.min(mins[i], v); maxs[i] = Math.max(maxs[i], v); }
+  }
+  for (const row of tbody.querySelectorAll('tr')) {
+    const vis = row.style.display !== 'none';
+    for (let i = 0; i < row.cells.length; i++) {
+      const c = row.cells[i]; c.classList.remove('best', 'worst');
+      const v = parseFloat(c.dataset.val);
+      if (!isNaN(v) && maxs[i] > mins[i] && vis) {
+        c.style.background = cellBg((v - mins[i]) / (maxs[i] - mins[i]));
+        if (v === maxs[i]) c.classList.add('best');
+        if (v === mins[i]) c.classList.add('worst');
+      } else c.style.background = '';
+    }
+  }
+}
+
+// ── Table sort ───────────────────────────────────────────────────────────────
+function sortTbl(th) {
+  const tbl = th.closest('table'), idx = [...th.parentNode.children].indexOf(th);
+  const asc = !th.classList.contains('asc');
+  for (const x of th.parentNode.children) x.classList.remove('sorted', 'asc', 'desc');
+  th.classList.add('sorted', asc ? 'asc' : 'desc');
+  const tbody = tbl.querySelector('tbody');
+  [...tbody.querySelectorAll('tr:not(.child-row)')].sort((a, b) => {
+    const av = a.cells[idx]?.dataset.val ?? '', bv = b.cells[idx]?.dataset.val ?? '';
+    const an = parseFloat(av), bn = parseFloat(bv);
+    return (asc ? 1 : -1) * ((!isNaN(an) && !isNaN(bn)) ? an - bn : av.localeCompare(bv));
+  }).forEach(row => {
+    tbody.appendChild(row);
+    const gid = row.dataset.gid;
+    if (gid) tbody.querySelectorAll(`[data-parent="${gid}"]`).forEach(c => tbody.appendChild(c));
   });
 }
 
-// ── table interactions ────────────────────────────────────────────────────────
-function sortTable(th) {
-  const table = th.closest('table');
-  const idx = Array.from(th.parentNode.children).indexOf(th);
-  const asc = !th.hasAttribute('data-asc');
-  th.parentNode.querySelectorAll('th').forEach(h => { h.removeAttribute('data-asc'); h.removeAttribute('data-desc'); });
-  th.setAttribute(asc ? 'data-asc' : 'data-desc', '');
-  const tbody = table.querySelector('tbody');
-  Array.from(tbody.querySelectorAll('tr:not(.child-row)'))
-    .sort((a, b) => {
-      const av = a.cells[idx].dataset.val ?? '', bv = b.cells[idx].dataset.val ?? '';
-      const an = parseFloat(av), bn = parseFloat(bv);
-      return (asc ? 1 : -1) * ((!isNaN(an) && !isNaN(bn)) ? an - bn : av.localeCompare(bv));
-    })
-    .forEach(row => {
-      tbody.appendChild(row);
-      const gid = row.dataset.gid;
-      if (gid) tbody.querySelectorAll(`[data-parent="${gid}"]`).forEach(c => tbody.appendChild(c));
-    });
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  for (const b of document.querySelectorAll('.nav-tab')) b.classList.toggle('active', b.dataset.tab === tab);
+  for (const p of document.querySelectorAll('.tab-panel')) p.classList.toggle('active', p.id === 'tab-' + tab);
+  if (tab === 'curves' && chartInits.length) {
+    requestAnimationFrame(() => { chartInits.forEach(fn => fn()); chartInits = []; });
+  }
 }
 
-function makeFilterFn(table, block) {
-  return () => {
-    const checked = new Set(Array.from(block.querySelectorAll('.pill-group button.selected')).map(btn => btn.dataset.size));
-    const tbody = table.querySelector('tbody');
-    tbody.querySelectorAll('tr:not(.child-row)').forEach(row => {
-      const visible = checked.has(row.dataset.size);
-      row.style.display = visible ? '' : 'none';
-      const gid = row.dataset.gid;
-      if (gid) {
-        const expanded = row.querySelector('.toggle')?.textContent.trim() === '▼';
-        tbody.querySelectorAll(`[data-parent="${gid}"]`).forEach(child => {
-          child.style.display = (visible && expanded && checked.has(child.dataset.size)) ? '' : 'none';
-        });
-      }
-    });
-    recolorTable(table);
-  };
+// ── Search ───────────────────────────────────────────────────────────────────
+function applySearch(q) {
+  searchQuery = q.toLowerCase();
+  const tbl = document.getElementById('exp-table');
+  if (!tbl) return;
+  const tbody = tbl.querySelector('tbody');
+  const on = selectedSizes('size-pills');
+  for (const row of tbody.querySelectorAll('tr:not(.child-row)')) {
+    const name = (row.cells[0]?.dataset.val ?? '').toLowerCase();
+    const show = (!searchQuery || name.includes(searchQuery)) && on.has(row.dataset.size);
+    row.style.display = show ? '' : 'none';
+    const gid = row.dataset.gid;
+    if (gid) {
+      for (const ch of tbody.querySelectorAll(`[data-parent="${gid}"]`)) ch.style.display = 'none';
+      const btn = row.querySelector('.expand-btn');
+      if (btn) btn.classList.remove('open');
+    }
+  }
+  recolor(tbl);
 }
 
-// ── pill group helper ─────────────────────────────────────────────────────────
-function makePillGroup(sizes, onChange) {
-  const div = el('div', {cls: 'pill-group'});
-  sizes.forEach(size => {
-    const btn = el('button', {cls: 'pill selected', text: size});
-    btn.dataset.size = size;
-    btn.addEventListener('click', () => {
-      btn.classList.toggle('selected');
-      onChange();
-    });
-    div.appendChild(btn);
-  });
-  return div;
+function selectedSizes(id) {
+  return new Set([...document.querySelectorAll(`#${id} .pill.on`)].map(p => p.dataset.size));
 }
 
-// ── nav ───────────────────────────────────────────────────────────────────────
-function buildNav(data) {
-  const navLinks = document.getElementById('nav-links');
-  const navDate = document.getElementById('nav-date');
-
-  [['topk', 'Top K'], ['experiments', 'Experiments']].forEach(([id, label]) => {
-    navLinks.appendChild(el('a', {href: '#' + id, text: label}));
-  });
-  navLinks.appendChild(el('a', {href: 'checkpoints.html', text: 'Training Curves →'}));
-
-  // Generated timestamp
-  const now = new Date();
-  navDate.textContent = 'Generated ' + now.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
-}
-
-// ── Active nav link via IntersectionObserver ──────────────────────────────────
-function setupNavObserver() {
-  const sections = document.querySelectorAll('section[id]');
-  const links = document.querySelectorAll('#nav-links a');
-  if (!sections.length || !links.length) return;
-
-  const map = {};
-  links.forEach(a => {
-    const id = a.getAttribute('href').slice(1);
-    map[id] = a;
-  });
-
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      const a = map[entry.target.id];
-      if (a) a.classList.toggle('active', entry.isIntersecting);
-    });
-  }, { rootMargin: '-52px 0px -60% 0px', threshold: 0 });
-
-  sections.forEach(s => io.observe(s));
-}
-
-// ── Stats bar ─────────────────────────────────────────────────────────────────
-function buildStatsBar(data) {
-  const numExps = data.experiments.length;
-  const numFamilies = data.groups ? Object.keys(data.groups).length : 0;
-  const metric = data.meta.metric;
-
-  const chips = [
-    {value: numExps, label: 'experiments'},
-    {value: numFamilies, label: 'families'},
-    {value: metric, label: 'metric'},
-  ];
-
-  const bar = el('div', {cls: 'stats-bar'});
-  chips.forEach(({value, label}) => {
-    bar.appendChild(el('div', {cls: 'stat-chip'},
-      el('span', {cls: 'stat-value', id: label === 'metric' ? 'stat-metric' : undefined, text: String(value)}),
-      el('span', {cls: 'stat-label', text: label}),
-    ));
-  });
-
-  document.getElementById('content').appendChild(bar);
-}
-
-// ── Top K ─────────────────────────────────────────────────────────────────────
-function buildTopK(data) {
-  const { experiments, meta } = data;
-  const rankings = {};
-  meta.tasks.forEach(task => {
-    rankings[task] = [...experiments]
-      .filter(e => e.scores[task] != null)
-      .sort((a, b) => b.scores[task] - a.scores[task]);
-  });
-
-  const kInput = el('input', {
-    type: 'number',
-    id: 'topk-k',
-    value: '3',
-    min: '1',
-    max: '50',
-    cls: 'topk-k-input',
-    oninput: updateTopK
-  });
-
-  const pillGroup = makePillGroup(['3B', '8B'], updateTopK);
-  // Give topk filter pills the class topk-filter for updateTopK to query
-  pillGroup.querySelectorAll('button').forEach(b => b.classList.add('topk-filter'));
-
-  const controls = el('div', {cls: 'topk-controls'},
-    el('span', {cls: 'pill-group-label'}, 'Show top'),
-    kInput,
-    el('span', {cls: 'pill-group-label'}, 'results for:'),
-    pillGroup,
+// ── Build: Stats ─────────────────────────────────────────────────────────────
+function buildStats(data) {
+  return h('div', {cls: 'stats-row'},
+    ...[
+      [data.experiments.length, 'experiments'],
+      [data.groups ? Object.keys(data.groups).length : 0, 'families'],
+      [data.meta.metric, 'metric'],
+    ].map(([v, l]) => h('div', {cls: 'stat'},
+      h('div', {cls: 'stat-val', text: String(v)}),
+      h('div', {cls: 'stat-lbl', text: l})
+    ))
   );
+}
 
-  const grid = el('div', {cls: 'domain-grid', id: 'topk-grid'});
-  meta.tasks.forEach(task => {
-    const ol = el('ol', {cls: 'topk-list'});
-    rankings[task].forEach(exp => {
-      ol.appendChild(el('li', {cls: 'topk-item', 'data-size': exp.retriever_size},
-        el('span', {cls: 'tk-exp', title: exp.name, text: exp.name}),
-        el('span', {cls: 'tk-score', text: exp.scores[task].toFixed(2)}),
+// ── Build: Top K ─────────────────────────────────────────────────────────────
+function buildTopK(data) {
+  const rankings = {};
+  for (const t of data.meta.tasks)
+    rankings[t] = [...data.experiments].filter(e => e.scores[t] != null).sort((a, b) => b.scores[t] - a.scores[t]);
+
+  const kInput = h('input', {type: 'number', id: 'topk-k', value: '3', min: '1', max: '50', cls: 'k-input', oninput: updateTopK});
+  const pills = h('div', {cls: 'pill-group', id: 'topk-sizes'});
+  for (const s of ['3B', '8B'])
+    pills.appendChild(h('button', {cls: 'pill on', text: s, dataset: {size: s}, onclick: e => { e.target.classList.toggle('on'); updateTopK(); }}));
+
+  const grid = h('div', {cls: 'domain-grid', id: 'topk-grid'});
+  for (const t of data.meta.tasks) {
+    const list = h('ol', {cls: 'topk-list'});
+    for (const exp of rankings[t])
+      list.appendChild(h('li', {cls: 'topk-item', dataset: {size: exp.retriever_size}},
+        h('span', {cls: 'tk-name', title: exp.name, text: exp.name}),
+        h('span', {cls: 'tk-score', text: exp.scores[t].toFixed(2)})
       ));
-    });
-    const card = el('div', {cls: 'domain-card'},
-      el('div', {cls: 'domain-card-header'},
-        el('h4', {text: task.replace(/_/g, ' ')})
-      ),
-      el('div', {cls: 'domain-card-body'}, ol)
-    );
-    grid.appendChild(card);
-  });
+    grid.appendChild(h('div', {cls: 'domain-card'},
+      h('div', {cls: 'domain-hdr'}, h('h4', {text: t.replace(/_/g, ' ')})),
+      h('div', {cls: 'domain-body'}, list)
+    ));
+  }
 
-  const section = el('section', {id: 'topk', cls: 'section-anchor'},
-    el('h2', {text: 'Top K per Domain'}),
-    controls,
+  requestAnimationFrame(updateTopK);
+  return h('div', {cls: 'card', id: 'topk'},
+    h('div', {cls: 'card-title', text: 'Top K per Domain'}),
+    h('div', {cls: 'toolbar'}, h('span', {cls: 'toolbar-label', text: 'Show top'}), kInput, h('span', {cls: 'toolbar-label', text: 'per domain'}), pills),
     grid
   );
-  document.getElementById('content').appendChild(section);
-  updateTopK();
 }
 
 function updateTopK() {
   const k = Math.max(1, parseInt(document.getElementById('topk-k')?.value) || 3);
-  const checked = new Set(Array.from(document.querySelectorAll('.topk-filter.selected')).map(btn => btn.dataset.size));
-  document.querySelectorAll('.topk-list').forEach(list => {
+  const on = selectedSizes('topk-sizes');
+  for (const list of document.querySelectorAll('.topk-list')) {
     let shown = 0;
-    list.querySelectorAll('.topk-item').forEach(item => {
-      const ok = checked.has(item.dataset.size) && shown < k;
+    for (const item of list.querySelectorAll('.topk-item')) {
+      const ok = on.has(item.dataset.size) && shown < k;
       item.style.display = ok ? '' : 'none';
       if (ok) shown++;
-    });
-  });
-}
-
-// ── Experiments table ─────────────────────────────────────────────────────────
-function buildExperimentsTable(data) {
-  const { experiments } = data;
-  const fields = DATA._fields;
-  const expMap = DATA._expMap;
-
-  // Group by (base, size)
-  const grpMap = {};
-  experiments.forEach(exp => {
-    const m = exp.name.match(/^(.+)\/checkpoint-\d+/);
-    const base = m ? m[1] : exp.name;
-    const key = base + '::' + exp.retriever_size;
-    if (!grpMap[key]) grpMap[key] = {exps: []};
-    grpMap[key].exps.push(exp);
-  });
-  Object.values(grpMap).forEach(g => {
-    g.exps.sort((a, b) => (a.checkpoint_step || 0) - (b.checkpoint_step || 0));
-  });
-
-  // Derive best + last + children per group
-  const parents = Object.values(grpMap).map(g => {
-    const bestExp = g.exps.reduce((a, b) => ((a.avg || 0) >= (b.avg || 0) ? a : b));
-    const lastExp = g.exps[g.exps.length - 1];
-    const children = g.exps.filter(e => e !== bestExp);
-    return {bestExp, lastExp, children};
-  }).sort((a, b) => (b.bestExp.avg || 0) - (a.bestExp.avg || 0));
-
-  // Build section
-  const section = el('section', {id: 'experiments', cls: 'section-anchor'},
-    el('h2', {text: 'Experiments'})
-  );
-  const block = el('div', {cls: 'tbl-block'});
-  section.appendChild(block);
-
-  // Controls — pill group replaces checkboxes
-  const pillGroup = makePillGroup(['3B', '8B'], () => doFilter());
-
-  const bestBtn = el('button', {cls: 'ct-btn active', text: 'Best'});
-  const lastBtn = el('button', {cls: 'ct-btn',        text: 'Last'});
-  const controls = el('div', {cls: 'tbl-controls'},
-    el('span', {cls: 'pill-group-label'}, 'Filter size:'),
-    pillGroup,
-    el('span', {cls: 'mode-toggle'}, 'Parent row:', bestBtn, lastBtn),
-  );
-  block.appendChild(controls);
-
-  // Table
-  const wrap = el('div', {cls: 'tbl-wrap'});
-  const table = el('table');
-  const thead = el('thead');
-  const headerRow = el('tr');
-  fields.forEach(field => {
-    const th = el('th', {text: field.replace(/_/g, ' ')});
-    th.onclick = () => sortTable(th);
-    headerRow.appendChild(th);
-  });
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
-
-  const tbody = el('tbody');
-
-  parents.forEach((p, pi) => {
-    const {bestExp, lastExp, children} = p;
-    const hasChildren = children.length > 0;
-    const gid = 'g' + pi;
-
-    // Parent row
-    const tr = el('tr', {
-      'data-size':   bestExp.retriever_size,
-      'data-family': expFamily(bestExp.name),
-    });
-    if (hasChildren) {
-      tr.classList.add('parent-row');
-      tr.dataset.gid      = gid;
-      tr.dataset.bestName = bestExp.name;
-      tr.dataset.lastName = lastExp.name;
     }
-    fields.forEach((field, j) => {
-      const val = expVal(bestExp, field);
-      const td = el('td');
-      td.dataset.val = val;
-      if (j === 0 && hasChildren) {
-        const btn = el('button', {cls: 'toggle', text: '▶'});
-        btn.addEventListener('click', () => toggleRow(gid, tbody, table, block));
-        td.appendChild(btn);
-        td.appendChild(document.createTextNode(' ' + val));
-      } else {
-        td.textContent = val;
-      }
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-
-    // Child rows
-    children.forEach(child => {
-      const ctr = el('tr', {cls: 'child-row', style: 'display:none',
-        'data-parent': gid, 'data-size': child.retriever_size,
-        'data-family': expFamily(child.name)});
-      fields.forEach((field, j) => {
-        const val = expVal(child, field);
-        const td = el('td');
-        td.dataset.val = val;
-        td.textContent = val;
-        if (j === 0) td.classList.add('child-first');
-        ctr.appendChild(td);
-      });
-      tbody.appendChild(ctr);
-    });
-  });
-
-  table.appendChild(tbody);
-  wrap.appendChild(table);
-  block.appendChild(wrap);
-
-  // Family legend
-  block.appendChild(el('div', {cls: 'family-legend'},
-    el('span', {cls: 'fl-wiki'},
-      el('span', {cls: 'fl-dot'}), 'wiki'),
-    el('span', {cls: 'fl-acereason'},
-      el('span', {cls: 'fl-dot'}), 'acereason'),
-    el('span', {cls: 'fl-baseline'},
-      el('span', {cls: 'fl-dot'}), 'baseline'),
-  ));
-
-  document.getElementById('content').appendChild(section);
-
-  // Wire interactions (after table is in DOM)
-  const doFilter = makeFilterFn(table, block);
-
-  bestBtn.addEventListener('click', () => {
-    bestBtn.classList.add('active'); lastBtn.classList.remove('active');
-    swapParentMode('best', table);
-  });
-  lastBtn.addEventListener('click', () => {
-    lastBtn.classList.add('active'); bestBtn.classList.remove('active');
-    swapParentMode('last', table);
-  });
-
-  recolorTable(table);
-}
-
-function toggleRow(gid, tbody, table, block) {
-  const parentRow = tbody.querySelector(`[data-gid="${gid}"]`);
-  const btn = parentRow.querySelector('.toggle');
-  const children = tbody.querySelectorAll(`[data-parent="${gid}"]`);
-  const expanding = btn.textContent.trim() === '▶';
-  btn.textContent = expanding ? '▼' : '▶';
-  if (expanding) {
-    const checked = new Set(Array.from(block.querySelectorAll('.pill-group button.selected')).map(btn => btn.dataset.size));
-    children.forEach(r => r.style.display = checked.has(r.dataset.size) ? '' : 'none');
-  } else {
-    children.forEach(r => r.style.display = 'none');
   }
-  recolorTable(table);
 }
 
-function swapParentMode(mode, table) {
-  const expMap = DATA._expMap;
-  const fields = DATA._fields;
-  table.querySelectorAll('tr.parent-row').forEach(row => {
-    const expName = mode === 'best' ? row.dataset.bestName : row.dataset.lastName;
-    if (!expName || !expMap[expName]) return;
-    const exp = expMap[expName];
-    row.dataset.size = exp.retriever_size;
-    row.dataset.family = expFamily(exp.name);
-    Array.from(row.cells).forEach((cell, i) => {
-      if (cell.querySelector('.toggle')) return;
-      const val = expVal(exp, fields[i]);
-      cell.dataset.val = val;
-      cell.textContent = val;
+// ── Build: Experiments Table ─────────────────────────────────────────────────
+function buildExpTable(data) {
+  const {experiments, meta} = data;
+  const fields = ['experiment', 'retriever_size', ...meta.tasks, 'avg'];
+  const expMap = {}; experiments.forEach(e => expMap[e.name] = e);
+
+  const groups = {};
+  for (const exp of experiments) {
+    const m = exp.name.match(/^(.+)\/checkpoint-\d+/);
+    const key = (m ? m[1] : exp.name) + '::' + exp.retriever_size;
+    (groups[key] ??= []).push(exp);
+  }
+  for (const exps of Object.values(groups))
+    exps.sort((a, b) => (a.checkpoint_step || 0) - (b.checkpoint_step || 0));
+
+  const parents = Object.values(groups).map(exps => {
+    const best = exps.reduce((a, b) => (a.avg || 0) >= (b.avg || 0) ? a : b);
+    return {best, last: exps[exps.length - 1], children: exps.filter(e => e !== best)};
+  }).sort((a, b) => (b.best.avg || 0) - (a.best.avg || 0));
+
+  const sizePills = h('div', {cls: 'pill-group', id: 'size-pills'});
+  for (const s of ['3B', '8B'])
+    sizePills.appendChild(h('button', {cls: 'pill on', text: s, dataset: {size: s}, onclick: () => filterExp()}));
+
+  const bestBtn = h('button', {cls: 'toggle-btn on', text: 'Best', onclick: () => setMode('best')});
+  const lastBtn = h('button', {cls: 'toggle-btn', text: 'Last', onclick: () => setMode('last')});
+
+  const tbl = h('table', {id: 'exp-table'});
+  const hrow = h('tr');
+  for (const f of fields) hrow.appendChild(h('th', {text: f.replace(/_/g, ' '), onclick: function() { sortTbl(this); }}));
+  tbl.appendChild(h('thead', null, hrow));
+
+  const tbody = h('tbody');
+  parents.forEach((p, i) => {
+    const {best, last, children} = p, hasCh = children.length > 0, gid = 'g' + i;
+    const tr = h('tr', {dataset: {
+      size: best.retriever_size, fam: expFamily(best.name),
+      ...(hasCh ? {gid, bestName: best.name, lastName: last.name} : {})
+    }});
+    if (hasCh) tr.classList.add('parent-row');
+    for (let j = 0; j < fields.length; j++) {
+      const val = expVal(best, fields[j]), td = h('td', {dataset: {val}});
+      if (j === 0 && hasCh) {
+        td.appendChild(h('button', {cls: 'expand-btn', text: '\u25B6', onclick: () => toggleCh(gid)}));
+        td.appendChild(document.createTextNode(' ' + val));
+      } else td.textContent = val;
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+    for (const ch of children) {
+      const ctr = h('tr', {cls: 'child-row', style: {display: 'none'}, dataset: {parent: gid, size: ch.retriever_size, fam: expFamily(ch.name)}});
+      for (let j = 0; j < fields.length; j++) {
+        const val = expVal(ch, fields[j]), td = h('td', {dataset: {val}, text: val});
+        if (j === 0) td.classList.add('child-indent');
+        ctr.appendChild(td);
+      }
+      tbody.appendChild(ctr);
+    }
+  });
+  tbl.appendChild(tbody);
+
+  const legend = h('div', {cls: 'legend'},
+    ...['wiki:#10b981', 'acereason:#8b5cf6', 'baseline:#94a3b8'].map(p => {
+      const [n, c] = p.split(':');
+      return h('span', null, h('span', {cls: 'legend-dot', style: {background: c}}), n);
+    })
+  );
+
+  const card = h('div', {cls: 'card', id: 'experiments'},
+    h('div', {cls: 'card-title', text: 'Experiments'}),
+    h('div', {cls: 'toolbar'},
+      h('span', {cls: 'toolbar-label', text: 'Size:'}), sizePills,
+      h('span', {cls: 'toolbar-label', text: 'Parent:'}), h('div', {cls: 'toggle-group'}, bestBtn, lastBtn)
+    ),
+    h('div', {cls: 'tbl-wrap'}, tbl), legend
+  );
+  requestAnimationFrame(() => recolor(tbl));
+
+  function filterExp() {
+    const on = selectedSizes('size-pills');
+    for (const row of tbody.querySelectorAll('tr:not(.child-row)')) {
+      const name = (row.cells[0]?.dataset.val ?? '').toLowerCase();
+      const show = on.has(row.dataset.size) && (!searchQuery || name.includes(searchQuery));
+      row.style.display = show ? '' : 'none';
+      const gid = row.dataset.gid;
+      if (gid) {
+        const open = row.querySelector('.expand-btn')?.classList.contains('open');
+        for (const ch of tbody.querySelectorAll(`[data-parent="${gid}"]`))
+          ch.style.display = (show && open && on.has(ch.dataset.size)) ? '' : 'none';
+      }
+    }
+    recolor(tbl);
+  }
+
+  function setMode(mode) {
+    bestBtn.classList.toggle('on', mode === 'best');
+    lastBtn.classList.toggle('on', mode === 'last');
+    for (const row of tbody.querySelectorAll('tr.parent-row')) {
+      const exp = expMap[mode === 'best' ? row.dataset.bestName : row.dataset.lastName];
+      if (!exp) continue;
+      row.dataset.size = exp.retriever_size; row.dataset.fam = expFamily(exp.name);
+      for (let i = 0; i < row.cells.length; i++) {
+        if (row.cells[i].querySelector('.expand-btn')) continue;
+        const val = expVal(exp, fields[i]);
+        row.cells[i].dataset.val = val; row.cells[i].textContent = val;
+      }
+    }
+    recolor(tbl);
+  }
+
+  function toggleCh(gid) {
+    const parent = tbody.querySelector(`[data-gid="${gid}"]`);
+    const btn = parent.querySelector('.expand-btn');
+    const opening = !btn.classList.contains('open');
+    btn.classList.toggle('open', opening);
+    const on = selectedSizes('size-pills');
+    for (const ch of tbody.querySelectorAll(`[data-parent="${gid}"]`))
+      ch.style.display = (opening && on.has(ch.dataset.size)) ? '' : 'none';
+    recolor(tbl);
+  }
+
+  tbl._filter = filterExp;
+  return card;
+}
+
+// ── Build: Training Curves ───────────────────────────────────────────────────
+function buildCurves(data) {
+  if (!data.groups) return h('div', {cls: 'card', text: 'No checkpoint groups found.'});
+  const expMap = {}; data.experiments.forEach(e => expMap[e.name] = e);
+  const families = Object.keys(data.groups).sort();
+  const allSizes = new Set();
+  Object.values(data.groups).forEach(sg => Object.keys(sg).forEach(s => allSizes.add(s)));
+
+  const famPills = h('div', {cls: 'pill-group'});
+  for (const fam of families) {
+    const sid = fam.replace(/[^a-zA-Z0-9]+/g, '-');
+    famPills.appendChild(h('button', {cls: 'pill on', text: fam, dataset: {family: sid}, onclick: e => {
+      e.target.classList.toggle('on');
+      const sec = document.getElementById('fam-' + sid);
+      if (sec) sec.style.display = e.target.classList.contains('on') ? '' : 'none';
+    }}));
+  }
+
+  const szPills = h('div', {cls: 'pill-group'});
+  for (const s of [...allSizes].sort())
+    szPills.appendChild(h('button', {cls: 'pill on', text: s, dataset: {size: s}, onclick: e => {
+      e.target.classList.toggle('on');
+      document.querySelectorAll(`.size-block[data-size="${s}"]`).forEach(b => b.style.display = e.target.classList.contains('on') ? '' : 'none');
+    }}));
+
+  const controls = h('div', {cls: 'curves-controls'},
+    h('div', {cls: 'toolbar', style: {marginBottom: '0'}},
+      h('span', {cls: 'toolbar-label', text: 'Families:'}), famPills,
+      h('span', {cls: 'toolbar-label', text: 'Size:'}), szPills
+    )
+  );
+
+  const wrap = h('div', null, controls);
+  for (const [base, sizeGroups] of Object.entries(data.groups).sort((a, b) => a[0].localeCompare(b[0]))) {
+    const sid = base.replace(/[^a-zA-Z0-9]+/g, '-');
+    const sec = h('div', {cls: 'card section-anchor', id: 'fam-' + sid, style: {marginBottom: '16px'}});
+    sec.appendChild(h('div', {cls: 'card-title', text: base}));
+
+    const allExps = Object.values(sizeGroups).flat().map(n => expMap[n]).filter(Boolean)
+      .sort((a, b) => (a.checkpoint_step || 0) - (b.checkpoint_step || 0));
+    sec.appendChild(buildFlatTbl(allExps, data.meta.tasks));
+
+    for (const [size, names] of Object.entries(sizeGroups)) {
+      const exps = names.map(n => expMap[n]).filter(Boolean);
+      const block = h('div', {cls: 'size-block', dataset: {size}});
+      block.appendChild(h('div', {cls: 'size-label', text: size + ' checkpoints'}));
+      const {grid, inits} = buildCharts(base, size, exps, data.meta.tasks, data.meta.metric);
+      block.appendChild(grid);
+      chartInits.push(...inits);
+      sec.appendChild(block);
+    }
+    wrap.appendChild(sec);
+  }
+  return wrap;
+}
+
+function buildFlatTbl(exps, tasks) {
+  const fields = ['experiment', 'retriever_size', ...tasks, 'avg'];
+  const tbl = h('table');
+  const hrow = h('tr');
+  for (const f of fields) hrow.appendChild(h('th', {text: f.replace(/_/g, ' '), onclick: function() { sortTbl(this); }}));
+  tbl.appendChild(h('thead', null, hrow));
+  const tbody = h('tbody');
+  for (const exp of exps) {
+    const tr = h('tr', {dataset: {size: exp.retriever_size, fam: expFamily(exp.name)}});
+    for (const f of fields) tr.appendChild(h('td', {dataset: {val: expVal(exp, f)}, text: expVal(exp, f)}));
+    tbody.appendChild(tr);
+  }
+  tbl.appendChild(tbody);
+  const wrap = h('div', {cls: 'tbl-wrap', style: {marginBottom: '12px'}}, tbl);
+  requestAnimationFrame(() => recolor(tbl));
+  return wrap;
+}
+
+function buildCharts(base, size, exps, tasks, metric) {
+  const color = size === '8B' ? '#8b5cf6' : '#6366f1';
+  const grid = h('div', {cls: 'chart-grid'}), inits = [];
+  const plotLayout = {
+    margin: {l: 45, r: 10, t: 30, b: 45},
+    plot_bgcolor: '#fff', paper_bgcolor: 'rgba(0,0,0,0)', height: 200,
+  };
+  const axisBase = {titlefont: {size: 9, color: '#64748b'}, tickfont: {size: 8, color: '#94a3b8'},
+    gridcolor: '#f1f5f9', linecolor: '#e2e8f0', zerolinecolor: '#e2e8f0'};
+
+  tasks.forEach((task, i) => {
+    const cid = `c-${base.replace(/[^a-zA-Z0-9]/g, '')}-${size}-${i}`;
+    const div = h('div', {id: cid, style: {height: '200px'}});
+    grid.appendChild(h('div', {cls: 'chart-card'}, div));
+    const steps = [], ys = [];
+    for (const exp of exps) if (exp.checkpoint_step != null && exp.scores[task] != null) {
+      steps.push(exp.checkpoint_step);
+      ys.push(Math.round(exp.scores[task] * 100) / 100);
+    }
+    inits.push(() => {
+      Plotly.newPlot(cid, [{
+        type: 'scatter', x: steps, y: ys, mode: 'lines+markers', name: size,
+        line: {color, width: 2}, marker: {size: 5, color},
+        hovertemplate: '%{x}: %{y:.2f}<extra>' + size + '</extra>',
+      }], {
+        ...plotLayout,
+        title: {text: task.replace(/_/g, ' '), font: {size: 11, color: '#334155', family: 'system-ui'}, x: 0.5},
+        xaxis: {title: 'step', ...axisBase}, yaxis: {title: metric, ...axisBase},
+      }, {responsive: true, displayModeBar: false});
     });
   });
-  recolorTable(table);
+  return {grid, inits};
 }
 
+// ── Boot ─────────────────────────────────────────────────────────────────────
+fetch('./data.json')
+  .then(r => { if (!r.ok) throw new Error(r.status + ' ' + r.statusText); return r.json(); })
+  .then(data => {
+    DATA = data;
+    document.getElementById('loading').remove();
+    document.title = 'BRIGHT Results';
+    const now = new Date();
+    document.getElementById('nav-meta').textContent =
+      now.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+
+    const content = document.getElementById('content');
+    const overview = h('div', {cls: 'tab-panel active', id: 'tab-overview'});
+    overview.appendChild(buildStats(data));
+    overview.appendChild(buildTopK(data));
+    overview.appendChild(buildExpTable(data));
+    content.appendChild(overview);
+
+    const curves = h('div', {cls: 'tab-panel', id: 'tab-curves'});
+    curves.appendChild(buildCurves(data));
+    content.appendChild(curves);
+
+    for (const btn of document.querySelectorAll('.nav-tab'))
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    document.getElementById('search').addEventListener('input', e => {
+      applySearch(e.target.value);
+      document.getElementById('exp-table')?._filter?.();
+    });
+
+    if (location.hash === '#curves') switchTab('curves');
+  })
+  .catch(err => {
+    const el = document.getElementById('loading');
+    if (el) el.innerHTML = `<div class="loading-text"><b>Could not load data.json.</b><br>
+      If local, serve with <code>python -m http.server</code><br>
+      <small style="color:#94a3b8">${err}</small></div>`;
+  });
 </script>
 </body>
 </html>
