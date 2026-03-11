@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BRIGHT Results</title>
-<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <style>
 /* ── Reset & base ─────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
@@ -450,32 +449,38 @@ tr[data-family="baseline"]  td:first-child { border-left: 4px solid #94a3b8; }
   flex-shrink: 0;
 }
 
-/* ── Checkpoint sections ──────────────────────────────────────────────────── */
-.chart-size-label {
-  display: inline-block;
-  background: #eff6ff;
-  color: #6366f1;
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  margin: 16px 0 8px;
-}
-
-.chart-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+/* ── Stats bar ────────────────────────────────────────────────────────────── */
+.stats-bar {
+  display: flex;
   gap: 12px;
-  margin-top: 4px;
+  flex-wrap: wrap;
 }
 
-.chart-card {
-  background: #fafbfc;
+.stat-chip {
+  background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 10px 8px 6px;
-  min-width: 0;
-  overflow: hidden;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 100px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #6366f1;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .05em;
 }
 
 /* ── Intersection observer for nav active state ───────────────────────────── */
@@ -518,9 +523,9 @@ fetch('./data.json')
     if (wrap) wrap.remove();
     document.title = 'BRIGHT Results';
     buildNav(data);
+    buildStatsBar(data);
     buildTopK(data);
     buildExperimentsTable(data);
-    buildCheckpointSections(data);
     setupNavObserver();
   })
   .catch(err => {
@@ -661,11 +666,7 @@ function buildNav(data) {
   [['topk', 'Top K'], ['experiments', 'Experiments']].forEach(([id, label]) => {
     navLinks.appendChild(el('a', {href: '#' + id, text: label}));
   });
-  if (data.groups) {
-    Object.keys(data.groups).sort().forEach(base => {
-      navLinks.appendChild(el('a', {href: '#' + base.replace(/[^a-zA-Z0-9]+/g, '-'), text: base}));
-    });
-  }
+  navLinks.appendChild(el('a', {href: 'checkpoints.html', text: 'Training Curves →'}));
 
   // Generated timestamp
   const now = new Date();
@@ -692,6 +693,29 @@ function setupNavObserver() {
   }, { rootMargin: '-52px 0px -60% 0px', threshold: 0 });
 
   sections.forEach(s => io.observe(s));
+}
+
+// ── Stats bar ─────────────────────────────────────────────────────────────────
+function buildStatsBar(data) {
+  const numExps = data.experiments.length;
+  const numFamilies = data.groups ? Object.keys(data.groups).length : 0;
+  const metric = data.meta.metric;
+
+  const chips = [
+    {value: numExps, label: 'experiments'},
+    {value: numFamilies, label: 'families'},
+    {value: metric, label: 'metric'},
+  ];
+
+  const bar = el('div', {cls: 'stats-bar'});
+  chips.forEach(({value, label}) => {
+    bar.appendChild(el('div', {cls: 'stat-chip'},
+      el('span', {cls: 'stat-value', id: label === 'metric' ? 'stat-metric' : undefined, text: String(value)}),
+      el('span', {cls: 'stat-label', text: label}),
+    ));
+  });
+
+  document.getElementById('content').appendChild(bar);
 }
 
 // ── Top K ─────────────────────────────────────────────────────────────────────
@@ -940,109 +964,6 @@ function swapParentMode(mode, table) {
   recolorTable(table);
 }
 
-// ── Checkpoint sections ───────────────────────────────────────────────────────
-function buildCheckpointSections(data) {
-  if (!data.groups) return;
-  const expMap = DATA._expMap;
-  const { meta } = data;
-  const plotlyInits = [];
-
-  Object.entries(data.groups).sort((a, b) => a[0].localeCompare(b[0])).forEach(([base, sizeGroups]) => {
-    const sid = base.replace(/[^a-zA-Z0-9]+/g, '-');
-    const section = el('section', {id: sid, cls: 'section-anchor'}, el('h2', {text: base}));
-
-    // Flat checkpoint table (all sizes, sorted by step)
-    const allExps = Object.values(sizeGroups).flat()
-      .map(n => expMap[n]).filter(Boolean)
-      .sort((a, b) => (a.checkpoint_step || 0) - (b.checkpoint_step || 0));
-    section.appendChild(buildFlatTable(allExps, meta.tasks));
-
-    // Per-size Plotly charts
-    Object.entries(sizeGroups).forEach(([size, expNames]) => {
-      const exps = expNames.map(n => expMap[n]).filter(Boolean);
-      section.appendChild(el('div', {cls: 'chart-size-label', text: size + ' checkpoints'}));
-      const {grid, inits} = buildChartGrid(base, size, exps, meta.tasks, meta.metric);
-      section.appendChild(grid);
-      plotlyInits.push(...inits);
-    });
-
-    document.getElementById('content').appendChild(section);
-  });
-
-  // Init Plotly charts after all sections are in DOM
-  requestAnimationFrame(() => plotlyInits.forEach(fn => fn()));
-}
-
-function buildFlatTable(exps, tasks) {
-  const fields = ['experiment', 'retriever_size', ...tasks, 'avg'];
-  const table = el('table');
-  const thead = el('thead');
-  const hrow = el('tr');
-  fields.forEach(f => {
-    const th = el('th', {text: f.replace(/_/g, ' ')});
-    th.onclick = () => sortTable(th);
-    hrow.appendChild(th);
-  });
-  thead.appendChild(hrow);
-  table.appendChild(thead);
-
-  const tbody = el('tbody');
-  exps.forEach(exp => {
-    const tr = el('tr', {'data-size': exp.retriever_size, 'data-family': expFamily(exp.name)});
-    fields.forEach((field, j) => {
-      const val = expVal(exp, field);
-      const td = el('td');
-      td.dataset.val = val;
-      td.textContent = val;
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  });
-  table.appendChild(tbody);
-
-  const wrap = el('div', {cls: 'tbl-wrap'}, table);
-  requestAnimationFrame(() => recolorTable(table));
-  return wrap;
-}
-
-function buildChartGrid(base, size, exps, tasks, metric) {
-  const color = size === '8B' ? '#8b5cf6' : '#6366f1';
-  const grid = el('div', {cls: 'chart-grid'});
-  const inits = [];
-
-  tasks.forEach((task, i) => {
-    const cid = `pc-${base.replace(/[^a-zA-Z0-9]/g, '')}-${size}-${i}`;
-    const chartDiv = el('div', {id: cid, style: 'height:200px'});
-    grid.appendChild(el('div', {cls: 'chart-card'}, chartDiv));
-
-    const steps = [], ys = [];
-    exps.forEach(exp => {
-      if (exp.checkpoint_step != null && exp.scores[task] != null) {
-        steps.push(exp.checkpoint_step);
-        ys.push(Math.round(exp.scores[task] * 100) / 100);
-      }
-    });
-
-    inits.push(() => {
-      Plotly.newPlot(cid, [{
-        type: 'scatter', x: steps, y: ys,
-        mode: 'lines+markers', name: size,
-        line: {color, width: 2}, marker: {size: 5, color},
-        hovertemplate: '%{x}: %{y:.2f}<extra>' + size + '</extra>',
-      }], {
-        title: {text: task.replace(/_/g, ' '), font: {size: 11, color: '#334155', family: 'system-ui'}, x: 0.5},
-        xaxis: {title: 'step', titlefont: {size: 9, color: '#64748b'}, tickfont: {size: 8, color: '#94a3b8'},
-                gridcolor: '#f1f5f9', linecolor: '#e2e8f0', zerolinecolor: '#e2e8f0'},
-        yaxis: {title: metric, titlefont: {size: 9, color: '#64748b'}, tickfont: {size: 8, color: '#94a3b8'},
-                gridcolor: '#f1f5f9', linecolor: '#e2e8f0', zerolinecolor: '#e2e8f0'},
-        margin: {l: 45, r: 10, t: 30, b: 45},
-        plot_bgcolor: '#fff', paper_bgcolor: 'rgba(0,0,0,0)', height: 200,
-      }, {responsive: true, displayModeBar: false});
-    });
-  });
-
-  return {grid, inits};
-}
 </script>
 </body>
 </html>
