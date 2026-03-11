@@ -169,11 +169,46 @@ tr[data-fam="baseline"] td:first-child { border-left: 3px solid #94a3b8; }
   display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;
 }
 .domain-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.domain-hdr { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 10px 14px; }
+.domain-hdr {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 10px 14px;
+  cursor: pointer; transition: filter .15s;
+}
+.domain-hdr:hover { filter: brightness(1.15); }
 .domain-hdr h4 {
   font-size: 13px; font-weight: 600; color: #fff;
   text-transform: capitalize;
+  display: flex; align-items: center; justify-content: space-between;
 }
+.domain-hdr h4::after {
+  content: '\2197'; font-size: 11px; opacity: .7;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(15,23,42,.55); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn .15s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-card {
+  background: var(--surface); border-radius: 16px;
+  width: min(1100px, 92vw); max-height: 88vh;
+  box-shadow: 0 24px 64px rgba(0,0,0,.25);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+}
+.modal-title { font-size: 17px; font-weight: 600; text-transform: capitalize; }
+.modal-close {
+  background: none; border: none; font-size: 22px; color: var(--faint);
+  cursor: pointer; padding: 4px 8px; border-radius: 8px; line-height: 1;
+  transition: all .15s;
+}
+.modal-close:hover { background: var(--border-light); color: var(--text); }
+.modal-body { padding: 20px 24px; flex: 1; overflow-y: auto; }
 .domain-body { padding: 8px 10px; }
 .topk-list { list-style: none; counter-reset: rank; }
 .topk-item {
@@ -393,8 +428,9 @@ function buildTopK(data) {
         h('span', {cls: 'tk-name', title: exp.name, text: exp.name}),
         h('span', {cls: 'tk-score', text: exp.scores[t].toFixed(2)})
       ));
+    const task = t;
     grid.appendChild(h('div', {cls: 'domain-card'},
-      h('div', {cls: 'domain-hdr'}, h('h4', {text: t.replace(/_/g, ' ')})),
+      h('div', {cls: 'domain-hdr', onclick: () => showDomainPlot(task)}, h('h4', {text: t.replace(/_/g, ' ')})),
       h('div', {cls: 'domain-body'}, list)
     ));
   }
@@ -420,57 +456,35 @@ function updateTopK() {
   }
 }
 
-// ── Build: Domain Scatter Plot ───────────────────────────────────────────────
-function buildDomainScatter(data) {
-  const {meta} = data;
-  const expMap = {}; data.experiments.forEach(e => expMap[e.name] = e);
+// ── Domain Scatter Modal ─────────────────────────────────────────────────────
+const famColors = {wiki: '#10b981', acereason: '#8b5cf6', baseline: '#94a3b8'};
+const sizeSymbols = {'3B': 'circle', '8B': 'diamond'};
+
+function showDomainPlot(task) {
+  const data = DATA;
+  if (!data) return;
 
   const bestPerGroup = {};
   for (const exp of data.experiments) {
-    const base = baseName(exp.name);
-    const key = base + '::' + exp.retriever_size;
+    const key = baseName(exp.name) + '::' + exp.retriever_size;
     if (!bestPerGroup[key] || (exp.avg || 0) > (bestPerGroup[key].avg || 0))
       bestPerGroup[key] = exp;
   }
-  const exps = Object.values(bestPerGroup).sort((a, b) => (b.avg || 0) - (a.avg || 0));
 
-  const famColors = {wiki: '#10b981', acereason: '#8b5cf6', baseline: '#94a3b8'};
-  const sizeSymbols = {'3B': 'circle', '8B': 'diamond'};
+  const sorted = Object.values(bestPerGroup)
+    .filter(e => e.scores[task] != null)
+    .sort((a, b) => a.scores[task] - b.scores[task]);
 
-  const grid = h('div', {cls: 'chart-grid', id: 'scatter-grid'});
-  const inits = [];
+  const names = sorted.map(e => e.name);
+  const scores = sorted.map(e => Math.round(e.scores[task] * 100) / 100);
+  const colors = sorted.map(e => famColors[expFamily(e.name)] || '#94a3b8');
+  const symbols = sorted.map(e => sizeSymbols[e.retriever_size] || 'circle');
 
-  meta.tasks.forEach((task, i) => {
-    const cid = 'scatter-' + i;
-    const div = h('div', {id: cid, style: {height: '320px'}});
-    grid.appendChild(h('div', {cls: 'chart-card'}, div));
+  const chartH = Math.max(400, sorted.length * 28 + 80);
+  const cid = 'modal-chart';
+  const chartDiv = h('div', {id: cid, style: {height: chartH + 'px', width: '100%'}});
 
-    const sorted = exps.filter(e => e.scores[task] != null)
-      .sort((a, b) => a.scores[task] - b.scores[task]);
-    const names = sorted.map(e => e.name);
-    const scores = sorted.map(e => Math.round(e.scores[task] * 100) / 100);
-    const colors = sorted.map(e => famColors[expFamily(e.name)] || '#94a3b8');
-    const symbols = sorted.map(e => sizeSymbols[e.retriever_size] || 'circle');
-
-    inits.push(() => {
-      Plotly.newPlot(cid, [{
-        type: 'scatter', x: scores, y: names, mode: 'markers',
-        marker: {size: 10, color: colors, symbol: symbols, line: {width: 1, color: '#fff'}},
-        hovertemplate: '%{y}<br>' + meta.metric + ': %{x:.2f}<extra></extra>',
-      }], {
-        title: {text: task.replace(/_/g, ' '), font: {size: 14, color: '#334155', family: 'system-ui'}, x: 0.5},
-        xaxis: {title: meta.metric, titlefont: {size: 11, color: '#64748b'}, tickfont: {size: 10, color: '#94a3b8'},
-                gridcolor: '#f1f5f9', linecolor: '#e2e8f0', zerolinecolor: '#e2e8f0'},
-        yaxis: {tickfont: {size: 10, color: '#475569'}, automargin: true,
-                gridcolor: '#f1f5f9', linecolor: '#e2e8f0'},
-        margin: {l: 10, r: 20, t: 36, b: 50},
-        plot_bgcolor: '#fff', paper_bgcolor: 'rgba(0,0,0,0)',
-        height: 320,
-      }, {responsive: true, displayModeBar: false});
-    });
-  });
-
-  const legend = h('div', {cls: 'legend', style: {marginBottom: '14px'}},
+  const legend = h('div', {cls: 'legend', style: {marginBottom: '12px'}},
     ...Object.entries(famColors).map(([n, c]) =>
       h('span', null, h('span', {cls: 'legend-dot', style: {background: c}}), n)
     ),
@@ -478,12 +492,35 @@ function buildDomainScatter(data) {
     h('span', null, '\u25C6 8B'),
   );
 
-  const card = h('div', {cls: 'card', id: 'domain-scatter'},
-    h('div', {cls: 'card-title', text: 'Domain Comparison'}),
-    legend, grid
+  const backdrop = h('div', {cls: 'modal-backdrop', onclick: e => { if (e.target === backdrop) backdrop.remove(); }},
+    h('div', {cls: 'modal-card'},
+      h('div', {cls: 'modal-header'},
+        h('span', {cls: 'modal-title', text: task.replace(/_/g, ' ')}),
+        h('button', {cls: 'modal-close', html: '&times;', onclick: () => backdrop.remove()})
+      ),
+      h('div', {cls: 'modal-body'}, legend, chartDiv)
+    )
   );
-  card._plotInits = inits;
-  return card;
+
+  document.body.appendChild(backdrop);
+  const onKey = e => { if (e.key === 'Escape') { backdrop.remove(); document.removeEventListener('keydown', onKey); } };
+  document.addEventListener('keydown', onKey);
+
+  requestAnimationFrame(() => {
+    Plotly.newPlot(cid, [{
+      type: 'scatter', x: scores, y: names, mode: 'markers',
+      marker: {size: 12, color: colors, symbol: symbols, line: {width: 1.5, color: '#fff'}},
+      hovertemplate: '%{y}<br>' + data.meta.metric + ': %{x:.2f}<extra></extra>',
+    }], {
+      xaxis: {title: data.meta.metric, titlefont: {size: 13, color: '#64748b'}, tickfont: {size: 12, color: '#94a3b8'},
+              gridcolor: '#f1f5f9', linecolor: '#e2e8f0', zerolinecolor: '#e2e8f0'},
+      yaxis: {tickfont: {size: 12, color: '#475569'}, automargin: true,
+              gridcolor: '#f1f5f9', linecolor: '#e2e8f0'},
+      margin: {l: 10, r: 24, t: 10, b: 50},
+      plot_bgcolor: '#fff', paper_bgcolor: 'rgba(0,0,0,0)',
+      height: chartH,
+    }, {responsive: true, displayModeBar: false});
+  });
 }
 
 // ── Build: Experiments Table ─────────────────────────────────────────────────
@@ -760,8 +797,6 @@ fetch('./data.json')
     const overview = h('div', {cls: 'tab-panel active', id: 'tab-overview'});
     overview.appendChild(buildStats(data));
     overview.appendChild(buildTopK(data));
-    const scatterCard = buildDomainScatter(data);
-    overview.appendChild(scatterCard);
     overview.appendChild(buildExpTable(data));
     content.appendChild(overview);
 
@@ -775,11 +810,6 @@ fetch('./data.json')
       searchQuery = e.target.value.toLowerCase();
       document.getElementById('exp-table')?._filter?.();
     });
-
-    // Scatter plots are visible now — render immediately
-    if (scatterCard._plotInits) {
-      requestAnimationFrame(() => scatterCard._plotInits.forEach(fn => fn()));
-    }
 
     if (location.hash === '#curves') switchTab('curves');
   })
