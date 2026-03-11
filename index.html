@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRIGHT Results</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+*{box-sizing:border-box}
+body{font-family:system-ui,sans-serif;margin:0;background:#f0f2f5;color:#222}
+nav{position:sticky;top:0;background:#1a1a2e;padding:8px 16px;display:flex;
+    flex-wrap:wrap;gap:6px;align-items:center;z-index:100}
+.nav-title{color:#fff;font-weight:600;font-size:14px;margin-right:10px}
+nav a{color:#a0c4ff;text-decoration:none;font-size:12px;padding:3px 8px;border-radius:4px}
+nav a:hover{background:rgba(255,255,255,.15)}
+#content{padding:16px}
+section{margin:0 0 20px;background:#fff;border-radius:8px;padding:20px;
+        box-shadow:0 1px 4px rgba(0,0,0,.1)}
+section h2{margin:0 0 12px;font-size:1.1em;color:#333}
+.loading-msg{text-align:center;padding:60px;color:#666;font-size:14px;line-height:1.8}
+.loading-msg code{background:#eee;padding:2px 6px;border-radius:3px}
+
+/* ── table ──────────────────────────────────────────────────────────────── */
+.tbl-controls{display:flex;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap;
+              font-size:13px;color:#555}
+.tbl-controls label{cursor:pointer;user-select:none}
+input[type=checkbox]{cursor:pointer;accent-color:#4a90d9}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:12px;white-space:nowrap}
+th{background:#2d2d2d;color:#fff;padding:6px 10px;text-align:right;
+   cursor:pointer;user-select:none}
+th:first-child,th:nth-child(2){text-align:left}
+th[data-asc]::after{content:' ▲'}
+th[data-desc]::after{content:' ▼'}
+td{padding:4px 10px;border-bottom:1px solid #eee;text-align:right}
+td:first-child,td:nth-child(2){text-align:left;font-size:11px}
+tr:hover td{filter:brightness(.94)}
+td.cell-best {outline:2px solid #2a6db5;outline-offset:-2px;font-weight:700}
+td.cell-worst{outline:2px solid #c0392b;outline-offset:-2px;font-weight:700}
+.child-row{background:#fafafa}
+.child-first{padding-left:28px!important;border-left:3px solid #d0d0d0}
+.toggle{background:none;border:none;color:#aaa;cursor:pointer;font-size:10px;
+        padding:0 3px 0 0;vertical-align:middle;line-height:1}
+.toggle:hover{color:#333}
+
+/* family stripes */
+tr[data-family="wiki"]      td:first-child{border-left:4px solid #2ecc71}
+tr[data-family="acereason"] td:first-child{border-left:4px solid #9b59b6}
+tr[data-family="baseline"]  td:first-child{border-left:4px solid #95a5a6}
+.family-legend{font-size:11px;color:#666;margin-top:8px}
+.fl-wiki      {color:#2ecc71;margin-right:12px}
+.fl-acereason {color:#9b59b6;margin-right:12px}
+.fl-baseline  {color:#95a5a6}
+
+/* best/last toggle */
+.mode-toggle{display:flex;align-items:center;gap:4px;font-size:12px;color:#555}
+.ct-btn{background:#e8e8e8;border:none;border-radius:3px;padding:2px 8px;
+        cursor:pointer;font-size:11px}
+.ct-btn.active{background:#2d2d2d;color:#fff}
+
+/* ── top k ──────────────────────────────────────────────────────────────── */
+.topk-controls{font-size:13px;color:#555;margin-bottom:10px;display:flex;
+               align-items:center;gap:12px;flex-wrap:wrap}
+.topk-controls label{cursor:pointer;user-select:none}
+.domain-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.domain-card{background:#f8f9fb;border-radius:6px;padding:10px;min-width:0}
+.domain-card h4{margin:0 0 6px;font-size:12px;color:#444}
+.topk-list{margin:0;padding-left:18px;font-size:11px}
+.topk-item{display:flex;justify-content:space-between;gap:8px;padding:2px 0;
+           border-bottom:1px solid #eee}
+.tk-exp{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.tk-score{font-weight:600;color:#2a6db5;white-space:nowrap}
+
+/* ── checkpoint charts ───────────────────────────────────────────────────── */
+.chart-size-label{font-size:12px;font-weight:600;color:#555;margin:16px 0 4px}
+.chart-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:4px}
+.chart-card{background:#f8f9fb;border-radius:6px;padding:8px;min-width:0}
+</style>
+</head>
+<body>
+
+<nav id="nav"><span class="nav-title">BRIGHT Results</span></nav>
+<div id="content">
+  <div id="loading" class="loading-msg">
+    Loading data.json…<br>
+    <small>If viewing locally, serve with: <code>python -m http.server</code></small>
+  </div>
+</div>
+
+<script>
+// ── globals ──────────────────────────────────────────────────────────────────
+let TASKS = [], METRIC = 'NDCG@10', DATA = null;
+
+// ── boot ─────────────────────────────────────────────────────────────────────
+fetch('./data.json')
+  .then(r => { if (!r.ok) throw new Error(r.status + ' ' + r.statusText); return r.json(); })
+  .then(data => {
+    DATA = data;
+    TASKS = data.meta.tasks;
+    METRIC = data.meta.metric;
+    DATA._expMap = {};
+    data.experiments.forEach(e => DATA._expMap[e.name] = e);
+    DATA._fields = ['experiment', 'retriever_size', ...TASKS, 'avg'];
+    document.getElementById('loading').remove();
+    document.title = 'BRIGHT Results';
+    buildNav(data);
+    buildTopK(data);
+    buildExperimentsTable(data);
+    buildCheckpointSections(data);
+  })
+  .catch(err => {
+    document.getElementById('loading').innerHTML =
+      `<b>Could not load data.json.</b><br>
+       If viewing locally, serve with: <code>python -m http.server</code><br>
+       <small style="color:#999">${err}</small>`;
+  });
+
+// ── utilities ─────────────────────────────────────────────────────────────────
+function cellBg(t) { return `hsl(${Math.round(t * 120)},55%,82%)`; }
+
+function fmt(v, field) {
+  if (v == null) return '';
+  if (field === 'experiment' || field === 'retriever_size') return v;
+  return typeof v === 'number' ? v.toFixed(2) : v;
+}
+
+function expVal(exp, field) {
+  if (field === 'experiment')     return exp.name;
+  if (field === 'retriever_size') return exp.retriever_size;
+  if (field === 'avg')            return exp.avg != null ? exp.avg.toFixed(2) : '';
+  const s = exp.scores[field];
+  return s != null ? s.toFixed(2) : '';
+}
+
+function expFamily(name) {
+  const base = name.replace(/\/checkpoint-.*/, '');
+  if (base.startsWith('wiki'))      return 'wiki';
+  if (base.startsWith('acereason')) return 'acereason';
+  return 'baseline';
+}
+
+function el(tag, props = {}, ...children) {
+  const e = document.createElement(tag);
+  Object.entries(props).forEach(([k, v]) => {
+    if (k === 'cls')  e.className = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k === 'text') e.textContent = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else e[k] = v;
+  });
+  children.flat().forEach(c => c && e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
+  return e;
+}
+
+// ── recolorTable ─────────────────────────────────────────────────────────────
+function recolorTable(tbl) {
+  const tbody = tbl.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => r.style.display !== 'none');
+  const ncols = tbl.querySelector('thead tr').cells.length;
+  const mins = new Array(ncols).fill(Infinity);
+  const maxs = new Array(ncols).fill(-Infinity);
+  rows.forEach(row => {
+    Array.from(row.cells).forEach((cell, i) => {
+      const v = parseFloat(cell.dataset.val);
+      if (!isNaN(v)) { mins[i] = Math.min(mins[i], v); maxs[i] = Math.max(maxs[i], v); }
+    });
+  });
+  tbody.querySelectorAll('tr').forEach(row => {
+    const visible = row.style.display !== 'none';
+    Array.from(row.cells).forEach((cell, i) => {
+      cell.classList.remove('cell-best', 'cell-worst');
+      const v = parseFloat(cell.dataset.val);
+      if (!isNaN(v) && maxs[i] > mins[i] && visible) {
+        cell.style.background = cellBg((v - mins[i]) / (maxs[i] - mins[i]));
+        if (v === maxs[i]) cell.classList.add('cell-best');
+        if (v === mins[i]) cell.classList.add('cell-worst');
+      } else {
+        cell.style.background = '';
+      }
+    });
+  });
+}
+
+// ── table interactions ────────────────────────────────────────────────────────
+function sortTable(th) {
+  const table = th.closest('table');
+  const idx = Array.from(th.parentNode.children).indexOf(th);
+  const asc = !th.hasAttribute('data-asc');
+  th.parentNode.querySelectorAll('th').forEach(h => { h.removeAttribute('data-asc'); h.removeAttribute('data-desc'); });
+  th.setAttribute(asc ? 'data-asc' : 'data-desc', '');
+  const tbody = table.querySelector('tbody');
+  Array.from(tbody.querySelectorAll('tr:not(.child-row)'))
+    .sort((a, b) => {
+      const av = a.cells[idx].dataset.val ?? '', bv = b.cells[idx].dataset.val ?? '';
+      const an = parseFloat(av), bn = parseFloat(bv);
+      return (asc ? 1 : -1) * ((!isNaN(an) && !isNaN(bn)) ? an - bn : av.localeCompare(bv));
+    })
+    .forEach(row => {
+      tbody.appendChild(row);
+      const gid = row.dataset.gid;
+      if (gid) tbody.querySelectorAll(`[data-parent="${gid}"]`).forEach(c => tbody.appendChild(c));
+    });
+}
+
+function makeFilterFn(table, block) {
+  return () => {
+    const checked = new Set(Array.from(block.querySelectorAll('.size-filter:checked')).map(cb => cb.value));
+    const tbody = table.querySelector('tbody');
+    tbody.querySelectorAll('tr:not(.child-row)').forEach(row => {
+      const visible = checked.has(row.dataset.size);
+      row.style.display = visible ? '' : 'none';
+      const gid = row.dataset.gid;
+      if (gid) {
+        const expanded = row.querySelector('.toggle')?.textContent.trim() === '▼';
+        tbody.querySelectorAll(`[data-parent="${gid}"]`).forEach(child => {
+          child.style.display = (visible && expanded && checked.has(child.dataset.size)) ? '' : 'none';
+        });
+      }
+    });
+    recolorTable(table);
+  };
+}
+
+// ── nav ───────────────────────────────────────────────────────────────────────
+function buildNav(data) {
+  const nav = document.getElementById('nav');
+  [['topk', 'Top K'], ['experiments', 'Experiments']].forEach(([id, label]) => {
+    nav.appendChild(el('a', {href: '#' + id, text: label}));
+  });
+  if (data.groups) {
+    Object.keys(data.groups).sort().forEach(base => {
+      nav.appendChild(el('a', {href: '#' + base.replace(/[^a-zA-Z0-9]+/g, '-'), text: base}));
+    });
+  }
+}
+
+// ── Top K ─────────────────────────────────────────────────────────────────────
+function buildTopK(data) {
+  const { experiments, meta } = data;
+  const rankings = {};
+  meta.tasks.forEach(task => {
+    rankings[task] = [...experiments]
+      .filter(e => e.scores[task] != null)
+      .sort((a, b) => b.scores[task] - a.scores[task]);
+  });
+
+  const kInput = el('input', {type: 'number', id: 'topk-k', value: '3', min: '1', max: '50',
+    style: 'width:50px;margin-left:4px', oninput: updateTopK});
+  const cb3B = el('input', {type: 'checkbox', cls: 'topk-filter', value: '3B', checked: true, onchange: updateTopK});
+  const cb8B = el('input', {type: 'checkbox', cls: 'topk-filter', value: '8B', checked: true, onchange: updateTopK});
+
+  const controls = el('div', {cls: 'topk-controls'},
+    el('label', {}, 'K:', kInput),
+    'Show:',
+    el('label', {}, cb3B, ' 3B'),
+    el('label', {}, cb8B, ' 8B'),
+  );
+
+  const grid = el('div', {cls: 'domain-grid', id: 'topk-grid'});
+  meta.tasks.forEach(task => {
+    const ol = el('ol', {cls: 'topk-list'});
+    rankings[task].forEach(exp => {
+      ol.appendChild(el('li', {cls: 'topk-item', 'data-size': exp.retriever_size},
+        el('span', {cls: 'tk-exp', title: exp.name, text: exp.name}),
+        el('span', {cls: 'tk-score', text: exp.scores[task].toFixed(2)}),
+      ));
+    });
+    grid.appendChild(el('div', {cls: 'domain-card'},
+      el('h4', {text: task.replace(/_/g, ' ')}), ol));
+  });
+
+  const section = el('section', {id: 'topk'}, el('h2', {text: 'Top K per Domain'}), controls, grid);
+  document.getElementById('content').appendChild(section);
+  updateTopK();
+}
+
+function updateTopK() {
+  const k = Math.max(1, parseInt(document.getElementById('topk-k')?.value) || 3);
+  const checked = new Set(Array.from(document.querySelectorAll('.topk-filter:checked')).map(cb => cb.value));
+  document.querySelectorAll('.topk-list').forEach(list => {
+    let shown = 0;
+    list.querySelectorAll('.topk-item').forEach(item => {
+      const ok = checked.has(item.dataset.size) && shown < k;
+      item.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+  });
+}
+
+// ── Experiments table ─────────────────────────────────────────────────────────
+function buildExperimentsTable(data) {
+  const { experiments } = data;
+  const fields = DATA._fields;
+  const expMap = DATA._expMap;
+
+  // Group by (base, size)
+  const grpMap = {};
+  experiments.forEach(exp => {
+    const m = exp.name.match(/^(.+)\/checkpoint-\d+/);
+    const base = m ? m[1] : exp.name;
+    const key = base + '::' + exp.retriever_size;
+    if (!grpMap[key]) grpMap[key] = {exps: []};
+    grpMap[key].exps.push(exp);
+  });
+  Object.values(grpMap).forEach(g => {
+    g.exps.sort((a, b) => (a.checkpoint_step || 0) - (b.checkpoint_step || 0));
+  });
+
+  // Derive best + last + children per group
+  const parents = Object.values(grpMap).map(g => {
+    const bestExp = g.exps.reduce((a, b) => ((a.avg || 0) >= (b.avg || 0) ? a : b));
+    const lastExp = g.exps[g.exps.length - 1];
+    const children = g.exps.filter(e => e !== bestExp);
+    return {bestExp, lastExp, children};
+  }).sort((a, b) => (b.bestExp.avg || 0) - (a.bestExp.avg || 0));
+
+  // Build section
+  const section = el('section', {id: 'experiments'}, el('h2', {text: 'Experiments'}));
+  const block = el('div', {cls: 'tbl-block'});
+  section.appendChild(block);
+
+  // Controls
+  const cb3B = el('input', {type: 'checkbox', cls: 'size-filter', value: '3B', checked: true});
+  const cb8B = el('input', {type: 'checkbox', cls: 'size-filter', value: '8B', checked: true});
+  const bestBtn = el('button', {cls: 'ct-btn active', text: 'Best'});
+  const lastBtn = el('button', {cls: 'ct-btn',        text: 'Last'});
+  const controls = el('div', {cls: 'tbl-controls'},
+    el('span', {}, 'Show:', el('label', {}, cb3B, ' 3B'), el('label', {}, cb8B, ' 8B')),
+    el('span', {cls: 'mode-toggle'}, 'Parent row:', bestBtn, lastBtn),
+  );
+  block.appendChild(controls);
+
+  // Table
+  const wrap = el('div', {cls: 'tbl-wrap'});
+  const table = el('table');
+  const thead = el('thead');
+  const headerRow = el('tr');
+  fields.forEach(field => {
+    const th = el('th', {text: field.replace(/_/g, ' ')});
+    th.onclick = () => sortTable(th);
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = el('tbody');
+
+  parents.forEach((p, pi) => {
+    const {bestExp, lastExp, children} = p;
+    const hasChildren = children.length > 0;
+    const gid = 'g' + pi;
+
+    // Parent row
+    const tr = el('tr', {
+      'data-size':   bestExp.retriever_size,
+      'data-family': expFamily(bestExp.name),
+    });
+    if (hasChildren) {
+      tr.classList.add('parent-row');
+      tr.dataset.gid      = gid;
+      tr.dataset.bestName = bestExp.name;
+      tr.dataset.lastName = lastExp.name;
+    }
+    fields.forEach((field, j) => {
+      const val = expVal(bestExp, field);
+      const td = el('td');
+      td.dataset.val = val;
+      if (j === 0 && hasChildren) {
+        const btn = el('button', {cls: 'toggle', text: '▶'});
+        btn.addEventListener('click', () => toggleRow(gid, tbody, table, block));
+        td.appendChild(btn);
+        td.appendChild(document.createTextNode(' ' + val));
+      } else {
+        td.textContent = val;
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+
+    // Child rows
+    children.forEach(child => {
+      const ctr = el('tr', {cls: 'child-row', style: 'display:none',
+        'data-parent': gid, 'data-size': child.retriever_size,
+        'data-family': expFamily(child.name)});
+      fields.forEach((field, j) => {
+        const val = expVal(child, field);
+        const td = el('td');
+        td.dataset.val = val;
+        td.textContent = val;
+        if (j === 0) td.classList.add('child-first');
+        ctr.appendChild(td);
+      });
+      tbody.appendChild(ctr);
+    });
+  });
+
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  block.appendChild(wrap);
+
+  // Family legend
+  block.appendChild(el('div', {cls: 'family-legend', html:
+    '<span class="fl-wiki">■ wiki</span>' +
+    '<span class="fl-acereason">■ acereason</span>' +
+    '<span class="fl-baseline">■ baseline</span>'}));
+
+  document.getElementById('content').appendChild(section);
+
+  // Wire interactions (after table is in DOM)
+  const doFilter = makeFilterFn(table, block);
+  cb3B.addEventListener('change', doFilter);
+  cb8B.addEventListener('change', doFilter);
+
+  bestBtn.addEventListener('click', () => {
+    bestBtn.classList.add('active'); lastBtn.classList.remove('active');
+    swapParentMode('best', table);
+  });
+  lastBtn.addEventListener('click', () => {
+    lastBtn.classList.add('active'); bestBtn.classList.remove('active');
+    swapParentMode('last', table);
+  });
+
+  recolorTable(table);
+}
+
+function toggleRow(gid, tbody, table, block) {
+  const parentRow = tbody.querySelector(`[data-gid="${gid}"]`);
+  const btn = parentRow.querySelector('.toggle');
+  const children = tbody.querySelectorAll(`[data-parent="${gid}"]`);
+  const expanding = btn.textContent.trim() === '▶';
+  btn.textContent = expanding ? '▼' : '▶';
+  if (expanding) {
+    const checked = new Set(Array.from(block.querySelectorAll('.size-filter:checked')).map(cb => cb.value));
+    children.forEach(r => r.style.display = checked.has(r.dataset.size) ? '' : 'none');
+  } else {
+    children.forEach(r => r.style.display = 'none');
+  }
+  recolorTable(table);
+}
+
+function swapParentMode(mode, table) {
+  const expMap = DATA._expMap;
+  const fields = DATA._fields;
+  table.querySelectorAll('tr.parent-row').forEach(row => {
+    const expName = mode === 'best' ? row.dataset.bestName : row.dataset.lastName;
+    if (!expName || !expMap[expName]) return;
+    const exp = expMap[expName];
+    row.dataset.size = exp.retriever_size;
+    row.dataset.family = expFamily(exp.name);
+    Array.from(row.cells).forEach((cell, i) => {
+      if (cell.querySelector('.toggle')) return;
+      const val = expVal(exp, fields[i]);
+      cell.dataset.val = val;
+      cell.textContent = val;
+    });
+  });
+  recolorTable(table);
+}
+
+// ── Checkpoint sections ───────────────────────────────────────────────────────
+function buildCheckpointSections(data) {
+  if (!data.groups) return;
+  const expMap = DATA._expMap;
+  const { meta } = data;
+  const plotlyInits = [];
+
+  Object.entries(data.groups).sort((a, b) => a[0].localeCompare(b[0])).forEach(([base, sizeGroups]) => {
+    const sid = base.replace(/[^a-zA-Z0-9]+/g, '-');
+    const section = el('section', {id: sid}, el('h2', {text: base}));
+
+    // Flat checkpoint table (all sizes, sorted by step)
+    const allExps = Object.values(sizeGroups).flat()
+      .map(n => expMap[n]).filter(Boolean)
+      .sort((a, b) => (a.checkpoint_step || 0) - (b.checkpoint_step || 0));
+    section.appendChild(buildFlatTable(allExps, meta.tasks));
+
+    // Per-size Plotly charts
+    Object.entries(sizeGroups).forEach(([size, expNames]) => {
+      const exps = expNames.map(n => expMap[n]).filter(Boolean);
+      section.appendChild(el('div', {cls: 'chart-size-label', text: size + ' checkpoints'}));
+      const {grid, inits} = buildChartGrid(base, size, exps, meta.tasks, meta.metric);
+      section.appendChild(grid);
+      plotlyInits.push(...inits);
+    });
+
+    document.getElementById('content').appendChild(section);
+  });
+
+  // Init Plotly charts after all sections are in DOM
+  requestAnimationFrame(() => plotlyInits.forEach(fn => fn()));
+}
+
+function buildFlatTable(exps, tasks) {
+  const fields = ['experiment', 'retriever_size', ...tasks, 'avg'];
+  const table = el('table');
+  const thead = el('thead');
+  const hrow = el('tr');
+  fields.forEach(f => {
+    const th = el('th', {text: f.replace(/_/g, ' ')});
+    th.onclick = () => sortTable(th);
+    hrow.appendChild(th);
+  });
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  const tbody = el('tbody');
+  exps.forEach(exp => {
+    const tr = el('tr', {'data-size': exp.retriever_size, 'data-family': expFamily(exp.name)});
+    fields.forEach((field, j) => {
+      const val = expVal(exp, field);
+      const td = el('td');
+      td.dataset.val = val;
+      td.textContent = val;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+
+  const wrap = el('div', {cls: 'tbl-wrap'}, table);
+  requestAnimationFrame(() => recolorTable(table));
+  return wrap;
+}
+
+function buildChartGrid(base, size, exps, tasks, metric) {
+  const color = size === '8B' ? '#e07b39' : '#4a90d9';
+  const grid = el('div', {cls: 'chart-grid'});
+  const inits = [];
+
+  tasks.forEach((task, i) => {
+    const cid = `pc-${base.replace(/[^a-zA-Z0-9]/g, '')}-${size}-${i}`;
+    const chartDiv = el('div', {id: cid, style: 'height:200px'});
+    grid.appendChild(el('div', {cls: 'chart-card'}, chartDiv));
+
+    const steps = [], ys = [];
+    exps.forEach(exp => {
+      if (exp.checkpoint_step != null && exp.scores[task] != null) {
+        steps.push(exp.checkpoint_step);
+        ys.push(Math.round(exp.scores[task] * 100) / 100);
+      }
+    });
+
+    inits.push(() => {
+      Plotly.newPlot(cid, [{
+        type: 'scatter', x: steps, y: ys,
+        mode: 'lines+markers', name: size,
+        line: {color, width: 2}, marker: {size: 5},
+        hovertemplate: '%{x}: %{y:.2f}<extra>' + size + '</extra>',
+      }], {
+        title: {text: task.replace(/_/g, ' '), font: {size: 11}, x: 0.5},
+        xaxis: {title: 'step', titlefont: {size: 9}, tickfont: {size: 8}},
+        yaxis: {title: metric, titlefont: {size: 9}, tickfont: {size: 8}},
+        margin: {l: 45, r: 10, t: 30, b: 45},
+        plot_bgcolor: '#fff', paper_bgcolor: 'rgba(0,0,0,0)', height: 200,
+      }, {responsive: true, displayModeBar: false});
+    });
+  });
+
+  return {grid, inits};
+}
+</script>
+</body>
+</html>
