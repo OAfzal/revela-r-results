@@ -28,37 +28,50 @@ h2 {
   border-bottom: 2px solid #e2e8f0;
 }
 
+.toolbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.toolbar-label { font-size: .75rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+.col-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+.col-pill {
+  background: #e2e8f0; color: #64748b; border: none; border-radius: 999px;
+  padding: 3px 10px; font-size: .6875rem; font-weight: 500; cursor: pointer;
+  transition: all .15s; text-transform: capitalize;
+}
+.col-pill.on { background: #6366f1; color: #fff; }
+.col-pill:hover:not(.on) { background: #cbd5e1; color: #334155; }
+
 .search {
-  width: 100%; padding: 9px 14px 9px 34px; font-size: .8125rem;
+  padding: 7px 12px 7px 30px; font-size: .8125rem;
   border: 1px solid #e2e8f0; border-radius: 8px; outline: none;
-  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") 12px center no-repeat;
-  margin-bottom: 10px; max-width: 280px; transition: border-color .15s;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") 10px center no-repeat;
+  max-width: 240px; transition: border-color .15s;
 }
 .search:focus { border-color: #6366f1; }
 
-.tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
+.tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #cbd5e1; }
 table { border-collapse: collapse; width: 100%; font-size: .8125rem; white-space: nowrap; }
 thead th {
   position: sticky; top: 0; z-index: 2;
   background: #f8fafc; color: #475569; font-size: .6875rem;
   font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
   padding: 10px 12px; text-align: right;
-  border-bottom: 2px solid #e2e8f0; cursor: pointer; user-select: none;
+  border: 1px solid #cbd5e1; cursor: pointer; user-select: none;
 }
 thead th:nth-child(1), thead th:nth-child(2), thead th:nth-child(3) { text-align: left; }
 thead th.asc::after { content: ' \2191'; }
 thead th.desc::after { content: ' \2193'; }
 thead th:last-child { background: #f0f0ff; }
 tbody td {
-  padding: 7px 12px; border-bottom: 1px solid #f1f5f9;
+  padding: 7px 12px; border: 1px solid #e2e8f0;
   text-align: right; font-variant-numeric: tabular-nums;
 }
 tbody td:nth-child(1), tbody td:nth-child(2), tbody td:nth-child(3) { text-align: left; }
 tbody td:last-child { background: rgba(99,102,241,.04); font-weight: 600; }
-tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: #f1f5f9 !important; }
 td.hi { outline: 2px solid #6366f1; outline-offset: -2px; font-weight: 700; }
 td.lo { outline: 2px solid #ef4444; outline-offset: -2px; }
+.col-hidden { display: none; }
 
 /* Sticky rank + name columns */
 thead th:nth-child(1), tbody td:nth-child(1) {
@@ -66,7 +79,7 @@ thead th:nth-child(1), tbody td:nth-child(1) {
 }
 thead th:nth-child(2), tbody td:nth-child(2) {
   position: sticky; left: 32px; z-index: 3; background: #fff;
-  border-right: 1px solid #e2e8f0; min-width: 180px;
+  border-right: 2px solid #cbd5e1; min-width: 180px;
 }
 thead th:nth-child(1) { z-index: 4; }
 thead th:nth-child(2) { z-index: 4; }
@@ -84,33 +97,85 @@ tbody tr:hover td:nth-child(1), tbody tr:hover td:nth-child(2) { background: #f1
 .size-badge.s8B { background: #fef3c7; color: #b45309; }
 
 .domains {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;
 }
 .dom { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; transition: box-shadow .15s; }
 .dom:hover { box-shadow: 0 2px 12px rgba(0,0,0,.06); }
 .dom-hdr {
   background: linear-gradient(135deg, #6366f1, #818cf8);
-  padding: 8px 12px; color: #fff; font-size: .8125rem;
+  padding: 7px 12px; color: #fff; font-size: .8125rem;
   font-weight: 600; text-transform: capitalize;
+  display: flex; justify-content: space-between; align-items: center;
 }
-.dom ol { list-style: none; padding: 6px 10px; counter-reset: r; }
+.dom-hdr .dom-best {
+  font-size: .6875rem; font-weight: 400; opacity: .8;
+}
+.dom ol { list-style: none; padding: 4px 0; counter-reset: r; }
 .dom li {
-  display: flex; align-items: baseline; gap: 6px;
-  padding: 5px 0; border-bottom: 1px solid #f1f5f9;
-  counter-increment: r; font-size: .8125rem;
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px; counter-increment: r; font-size: .8125rem;
+  position: relative;
 }
-.dom li:last-child { border-bottom: none; }
 .dom li::before {
-  content: counter(r); font-size: .6875rem; font-weight: 700;
-  color: #94a3b8; min-width: 14px; text-align: center;
+  content: counter(r); font-size: .625rem; font-weight: 700;
+  color: #94a3b8; min-width: 14px; text-align: center; flex-shrink: 0;
+  position: relative; z-index: 1;
 }
+.dom li:nth-child(1) { background: rgba(251,191,36,.08); }
 .dom li:nth-child(1)::before { color: #d97706; }
 .dom li:nth-child(2)::before { color: #6b7280; }
-.dom li:nth-child(3)::before { color: #b45309; }
-.dom .name { flex: 1; color: #334155; word-break: break-all; }
+.dom li:nth-child(3)::before { color: #a16207; }
+.dom .bar {
+  position: absolute; left: 0; top: 1px; bottom: 1px;
+  background: #e0e7ff; border-radius: 0 4px 4px 0;
+  pointer-events: none;
+}
+.dom li:nth-child(1) .bar { background: #fef3c7; }
+.dom .sz {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+.dom .sz.s3B { background: #6366f1; }
+.dom .sz.s8B { background: #f59e0b; }
+.dom .name {
+  flex: 1; color: #334155; font-size: .75rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  position: relative; z-index: 1;
+}
+.dom li:hover .name {
+  white-space: normal; word-break: break-all; overflow: visible;
+}
+.dom li:nth-child(1) .name { font-weight: 600; }
 .dom .sc {
-  background: #eef2ff; color: #6366f1; border-radius: 999px;
-  padding: 1px 8px; font-size: .75rem; font-weight: 600; white-space: nowrap;
+  color: #6366f1; font-size: .75rem;
+  font-weight: 600; flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums;
+  position: relative; z-index: 1;
+}
+.dom li:nth-child(1) .sc { color: #d97706; }
+.dom-legend {
+  display: flex; gap: 10px; padding: 4px 10px 6px; border-top: 1px solid #f1f5f9;
+  font-size: .625rem; color: #94a3b8;
+}
+.dom-legend .sz { display: inline-block; width: 6px; height: 6px; border-radius: 50%; vertical-align: middle; margin-right: 3px; }
+
+.pill {
+  background: #e2e8f0; color: #64748b; border: none; border-radius: 999px;
+  padding: 3px 12px; font-size: .6875rem; font-weight: 500; cursor: pointer; transition: all .15s;
+}
+.pill.on { background: #6366f1; color: #fff; }
+.pill:hover:not(.on) { background: #cbd5e1; color: #334155; }
+.toggle-group { display: flex; background: #e2e8f0; border-radius: 999px; padding: 2px; }
+.toggle-btn {
+  background: none; border: none; border-radius: 999px;
+  padding: 3px 12px; font-size: .6875rem; font-weight: 500;
+  cursor: pointer; color: #64748b; transition: all .15s;
+}
+.toggle-btn.on { background: #6366f1; color: #fff; }
+.pill-group { display: flex; gap: 4px; }
+.filter-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 12px; padding: 8px 12px;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
 }
 
 #loading { text-align: center; color: #64748b; padding: 80px 20px; font-size: .875rem; }
@@ -146,11 +211,17 @@ function h(tag, attrs, ...kids) {
 function baseName(n) { const m = n.match(/^(.+)\/checkpoint-\d+/); return m ? m[1] : n; }
 function cellBg(t) { return `hsl(${Math.round(t * 120)}, 50%, 84%)`; }
 
-function recolor(tbl) {
+let DATA, META, GRPS, FIELDS, tbl, topkGrid, searchQuery = '';
+let activeMode = 'best', activeSizes = new Set(['3B', '8B']);
+const K = 5;
+
+function recolor() {
+  if (!tbl) return;
   const rows = [...tbl.querySelectorAll('tbody tr')].filter(r => r.style.display !== 'none');
   const n = tbl.querySelector('thead tr').cells.length;
   const mins = Array(n).fill(Infinity), maxs = Array(n).fill(-Infinity);
   for (const row of rows) for (let i = 3; i < row.cells.length; i++) {
+    if (row.cells[i].classList.contains('col-hidden')) continue;
     const v = parseFloat(row.cells[i].dataset.v);
     if (!isNaN(v)) { mins[i] = Math.min(mins[i], v); maxs[i] = Math.max(maxs[i], v); }
   }
@@ -159,6 +230,7 @@ function recolor(tbl) {
     for (let i = 3; i < row.cells.length; i++) {
       const c = row.cells[i], v = parseFloat(c.dataset.v);
       c.classList.remove('hi', 'lo'); c.style.background = '';
+      if (c.classList.contains('col-hidden')) continue;
       if (!isNaN(v) && maxs[i] > mins[i] && vis) {
         c.style.background = cellBg((v - mins[i]) / (maxs[i] - mins[i]));
         if (v === maxs[i]) c.classList.add('hi');
@@ -168,8 +240,14 @@ function recolor(tbl) {
   }
 }
 
+function toggleCol(colIdx, show) {
+  for (const row of tbl.querySelectorAll('tr'))
+    row.cells[colIdx]?.classList.toggle('col-hidden', !show);
+  recolor();
+}
+
 function sortTbl(th) {
-  const tbl = th.closest('table'), idx = [...th.parentNode.children].indexOf(th);
+  const idx = [...th.parentNode.children].indexOf(th);
   const asc = !th.classList.contains('asc');
   for (const x of th.parentNode.children) x.classList.remove('asc', 'desc');
   th.classList.add(asc ? 'asc' : 'desc');
@@ -179,10 +257,10 @@ function sortTbl(th) {
     const an = parseFloat(av), bn = parseFloat(bv);
     return (asc ? 1 : -1) * ((!isNaN(an) && !isNaN(bn)) ? an - bn : av.localeCompare(bv));
   }).forEach(r => tbody.appendChild(r));
-  updateRanks(tbl);
+  updateRanks();
 }
 
-function updateRanks(tbl) {
+function updateRanks() {
   let rank = 0;
   for (const row of tbl.querySelectorAll('tbody tr')) {
     if (row.style.display === 'none') continue;
@@ -193,86 +271,179 @@ function updateRanks(tbl) {
   }
 }
 
+function getRepresentatives() {
+  const reps = {};
+  for (const [key, exps] of Object.entries(GRPS)) {
+    const sorted = [...exps].sort((a, b) => (a.checkpoint_step || 0) - (b.checkpoint_step || 0));
+    reps[key] = activeMode === 'best'
+      ? sorted.reduce((a, b) => (a.avg || 0) >= (b.avg || 0) ? a : b)
+      : sorted[sorted.length - 1];
+  }
+  return reps;
+}
+
+function getDomainReps(task) {
+  const reps = {};
+  for (const [key, exps] of Object.entries(GRPS)) {
+    const withScore = exps.filter(e => e.scores[task] != null);
+    if (!withScore.length) continue;
+    const sorted = [...withScore].sort((a, b) => (a.checkpoint_step || 0) - (b.checkpoint_step || 0));
+    reps[key] = activeMode === 'best'
+      ? sorted.reduce((a, b) => (a.scores[task] || 0) >= (b.scores[task] || 0) ? a : b)
+      : sorted[sorted.length - 1];
+  }
+  return reps;
+}
+
+function val(exp, f) {
+  if (f === '#') return '';
+  if (f === 'experiment') return exp.name;
+  if (f === 'size') return exp.retriever_size;
+  if (f === 'avg') return exp.avg != null ? exp.avg.toFixed(2) : '';
+  const s = exp.scores[f];
+  return s != null ? s.toFixed(2) : '';
+}
+
+function rebuildLeaderboard() {
+  const reps = getRepresentatives();
+  const rows = Object.values(reps)
+    .filter(e => activeSizes.has(e.retriever_size))
+    .sort((a, b) => (b.avg || 0) - (a.avg || 0));
+
+  const tbody = tbl.querySelector('tbody');
+  tbody.innerHTML = '';
+  rows.forEach((exp, i) => {
+    const name = exp.name.toLowerCase();
+    if (searchQuery && !name.includes(searchQuery)) return;
+    const tr = h('tr');
+    const rc = (i < 3) ? ['gold','silver','bronze'][i] : '';
+    tr.appendChild(h('td', {cls: 'rank' + (rc ? ' ' + rc : ''), dataset: {v: String(i+1)}, text: String(i+1)}));
+    tr.appendChild(h('td', {dataset: {v: exp.name}, text: exp.name}));
+    const badge = h('td', {dataset: {v: exp.retriever_size}});
+    badge.appendChild(h('span', {cls: 'size-badge s' + exp.retriever_size, text: exp.retriever_size}));
+    tr.appendChild(badge);
+    for (const t of META.tasks) {
+      const v = val(exp, t);
+      tr.appendChild(h('td', {dataset: {v}, text: v}));
+    }
+    const av = val(exp, 'avg');
+    tr.appendChild(h('td', {dataset: {v: av}, text: av}));
+    tbody.appendChild(tr);
+  });
+
+  // Re-apply column visibility
+  for (const pill of document.querySelectorAll('.col-pill')) {
+    if (!pill.classList.contains('on'))
+      toggleCol(parseInt(pill.dataset.col), false);
+  }
+
+  recolor();
+  updateRanks();
+}
+
+function rebuildTopK() {
+  topkGrid.innerHTML = '';
+  for (const t of META.tasks) {
+    const reps = getDomainReps(t);
+    const ranked = Object.values(reps)
+      .filter(e => activeSizes.has(e.retriever_size) && e.scores[t] != null)
+      .sort((a, b) => b.scores[t] - a.scores[t])
+      .slice(0, K);
+    const topScore = ranked[0]?.scores[t] || 1;
+
+    const ol = h('ol');
+    for (const exp of ranked) {
+      const pct = Math.round((exp.scores[t] / topScore) * 100);
+      ol.appendChild(h('li', null,
+        h('div', {cls: 'bar', style: {width: pct + '%'}}),
+        h('span', {cls: 'sz s' + exp.retriever_size, title: exp.retriever_size}),
+        h('span', {cls: 'name', title: exp.name, text: exp.name}),
+        h('span', {cls: 'sc', text: exp.scores[t].toFixed(2)})
+      ));
+    }
+    topkGrid.appendChild(h('div', {cls: 'dom'},
+      h('div', {cls: 'dom-hdr'},
+        h('span', {text: t.replace(/_/g, ' ')}),
+        h('span', {cls: 'dom-best', text: topScore.toFixed(2)})
+      ),
+      ol,
+      h('div', {cls: 'dom-legend'},
+        h('span', null, h('span', {cls: 'sz s3B'}), '3B'),
+        h('span', null, h('span', {cls: 'sz s8B'}), '8B')
+      )
+    ));
+  }
+}
+
+function updateAll() { rebuildLeaderboard(); rebuildTopK(); }
+
 fetch('./data.json')
   .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
   .then(data => {
     document.getElementById('loading').remove();
     const app = document.getElementById('app');
     app.style.display = '';
-    const { experiments, meta } = data;
+
+    DATA = data; META = data.meta;
     document.getElementById('sub').textContent =
-      `${experiments.length} experiments \u00b7 ${meta.metric} \u00b7 ${meta.tasks.length} domains`;
+      `${data.experiments.length} experiments \u00b7 ${META.metric} \u00b7 ${META.tasks.length} domains`;
 
-    const grps = {};
-    for (const exp of experiments) {
+    GRPS = {};
+    for (const exp of data.experiments) {
       const key = baseName(exp.name) + '::' + exp.retriever_size;
-      if (!grps[key] || (exp.avg || 0) > (grps[key].avg || 0)) grps[key] = exp;
+      (GRPS[key] ??= []).push(exp);
     }
-    const best = Object.values(grps).sort((a, b) => (b.avg || 0) - (a.avg || 0));
 
-    const fields = ['#', 'experiment', 'size', ...meta.tasks, 'avg'];
-    const tbl = h('table', {id: 'lb'});
+    // Shared filter bar
+    const sizePills = h('div', {cls: 'pill-group'});
+    for (const s of ['3B', '8B'])
+      sizePills.appendChild(h('button', {cls: 'pill on', text: s, onclick: e => {
+        e.target.classList.toggle('on');
+        activeSizes = new Set([...sizePills.querySelectorAll('.pill.on')].map(p => p.textContent));
+        updateAll();
+      }}));
+
+    const bestBtn = h('button', {cls: 'toggle-btn on', text: 'Best'});
+    const lastBtn = h('button', {cls: 'toggle-btn', text: 'Last'});
+    bestBtn.onclick = () => { activeMode = 'best'; bestBtn.classList.add('on'); lastBtn.classList.remove('on'); updateAll(); };
+    lastBtn.onclick = () => { activeMode = 'last'; lastBtn.classList.add('on'); bestBtn.classList.remove('on'); updateAll(); };
+
+    app.appendChild(h('div', {cls: 'filter-bar'},
+      h('span', {cls: 'toolbar-label', text: 'Size:'}), sizePills,
+      h('span', {cls: 'toolbar-label', text: 'Checkpoint:'}), h('div', {cls: 'toggle-group'}, bestBtn, lastBtn)
+    ));
+
+    // Leaderboard
+    FIELDS = ['#', 'experiment', 'size', ...META.tasks, 'avg'];
+    tbl = h('table', {id: 'lb'});
     const hrow = h('tr');
-    for (const f of fields)
+    for (const f of FIELDS)
       hrow.appendChild(h('th', {text: f.replace(/_/g, ' '), onclick: function() { sortTbl(this); }}));
     tbl.appendChild(h('thead', null, hrow));
-
-    const tbody = h('tbody');
-    best.forEach((exp, i) => {
-      const tr = h('tr');
-      const rc = (i < 3) ? ['gold','silver','bronze'][i] : '';
-      tr.appendChild(h('td', {cls: 'rank' + (rc ? ' ' + rc : ''), dataset: {v: String(i+1)}, text: String(i+1)}));
-      tr.appendChild(h('td', {dataset: {v: exp.name}, text: exp.name}));
-      const badge = h('td', {dataset: {v: exp.retriever_size}});
-      badge.appendChild(h('span', {cls: 'size-badge s' + exp.retriever_size, text: exp.retriever_size}));
-      tr.appendChild(badge);
-      for (const t of meta.tasks) {
-        const s = exp.scores[t]; const v = s != null ? s.toFixed(2) : '';
-        tr.appendChild(h('td', {dataset: {v}, text: v}));
-      }
-      const av = exp.avg != null ? exp.avg.toFixed(2) : '';
-      tr.appendChild(h('td', {dataset: {v: av}, text: av}));
-      tbody.appendChild(tr);
-    });
-    tbl.appendChild(tbody);
+    tbl.appendChild(h('tbody'));
 
     const search = h('input', {cls: 'search', type: 'text', placeholder: 'Filter experiments\u2026',
-      oninput: e => {
-        const q = e.target.value.toLowerCase();
-        for (const row of tbl.querySelectorAll('tbody tr')) {
-          row.style.display = row.cells[1].dataset.v.toLowerCase().includes(q) ? '' : 'none';
-        }
-        recolor(tbl); updateRanks(tbl);
-      }
+      oninput: e => { searchQuery = e.target.value.toLowerCase(); rebuildLeaderboard(); }
+    });
+
+    const colPills = h('div', {cls: 'col-pills'});
+    META.tasks.forEach((t, ti) => {
+      const colIdx = ti + 3;
+      colPills.appendChild(h('button', {cls: 'col-pill on', text: t.replace(/_/g, ' '), dataset: {col: String(colIdx)},
+        onclick: e => { e.target.classList.toggle('on'); toggleCol(colIdx, e.target.classList.contains('on')); }
+      }));
     });
 
     app.appendChild(h('h2', {text: 'Leaderboard'}));
-    app.appendChild(search);
+    app.appendChild(h('div', {cls: 'toolbar'}, search, h('span', {cls: 'toolbar-label', text: 'Columns:'}), colPills));
     app.appendChild(h('div', {cls: 'tbl-wrap'}, tbl));
-    requestAnimationFrame(() => recolor(tbl));
 
-    const K = 5;
-    const grid = h('div', {cls: 'domains'});
-    for (const t of meta.tasks) {
-      const domBest = {};
-      for (const exp of experiments) {
-        if (exp.scores[t] == null) continue;
-        const key = baseName(exp.name) + '::' + exp.retriever_size;
-        if (!domBest[key] || exp.scores[t] > domBest[key].scores[t]) domBest[key] = exp;
-      }
-      const ranked = Object.values(domBest).sort((a, b) => b.scores[t] - a.scores[t]).slice(0, K);
-      const ol = h('ol');
-      for (const exp of ranked)
-        ol.appendChild(h('li', null,
-          h('span', {cls: 'name', text: exp.name}),
-          h('span', {cls: 'sc', text: exp.scores[t].toFixed(2)})
-        ));
-      grid.appendChild(h('div', {cls: 'dom'},
-        h('div', {cls: 'dom-hdr', text: t.replace(/_/g, ' ')}), ol
-      ));
-    }
+    // Top K
+    topkGrid = h('div', {cls: 'domains'});
     app.appendChild(h('h2', {text: 'Top ' + K + ' per Domain'}));
-    app.appendChild(grid);
+    app.appendChild(topkGrid);
+
+    updateAll();
   })
   .catch(err => {
     document.getElementById('loading').innerHTML =
