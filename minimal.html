@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRIGHT Results</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #fafafa; color: #1a1a2e; line-height: 1.5;
+  max-width: 1280px; margin: 0 auto; padding: 32px 24px 64px;
+}
+
+header { margin-bottom: 40px; }
+h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.02em; }
+h1 span { color: #6366f1; }
+.subtitle { color: #64748b; font-size: .875rem; margin-top: 2px; }
+
+h2 {
+  font-size: 1rem; font-weight: 600; letter-spacing: -.01em;
+  margin: 40px 0 12px; padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
+table { border-collapse: collapse; width: 100%; font-size: .8125rem; white-space: nowrap; }
+thead th {
+  position: sticky; top: 0; z-index: 2;
+  background: #f8fafc; color: #475569; font-size: .6875rem;
+  font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  padding: 10px 12px; text-align: right;
+  border-bottom: 2px solid #e2e8f0; cursor: pointer; user-select: none;
+}
+thead th:first-child, thead th:nth-child(2) { text-align: left; }
+thead th.asc::after { content: ' \2191'; }
+thead th.desc::after { content: ' \2193'; }
+tbody td {
+  padding: 7px 12px; border-bottom: 1px solid #f1f5f9;
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+tbody td:first-child, tbody td:nth-child(2) { text-align: left; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: #f1f5f9 !important; }
+td.hi { outline: 2px solid #6366f1; outline-offset: -2px; font-weight: 700; }
+td.lo { outline: 2px solid #ef4444; outline-offset: -2px; }
+
+.domains {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;
+}
+.dom { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+.dom-hdr {
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  padding: 8px 12px; color: #fff; font-size: .8125rem;
+  font-weight: 600; text-transform: capitalize;
+}
+.dom ol { list-style: none; padding: 6px 10px; counter-reset: r; }
+.dom li {
+  display: flex; align-items: baseline; gap: 6px;
+  padding: 4px 0; border-bottom: 1px solid #f1f5f9;
+  counter-increment: r; font-size: .8125rem;
+}
+.dom li:last-child { border-bottom: none; }
+.dom li::before {
+  content: counter(r); font-size: .6875rem; font-weight: 700;
+  color: #94a3b8; min-width: 14px; text-align: center;
+}
+.dom .name { flex: 1; color: #334155; word-break: break-all; }
+.dom .score {
+  background: #eef2ff; color: #6366f1; border-radius: 999px;
+  padding: 1px 8px; font-size: .75rem; font-weight: 600; white-space: nowrap;
+}
+
+#loading { text-align: center; color: #64748b; padding: 80px 20px; font-size: .875rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span>BRIGHT</span> Results</h1>
+  <div class="subtitle" id="sub"></div>
+</header>
+
+<div id="loading">Loading data.json &hellip;</div>
+<div id="app" style="display:none"></div>
+
+<script>
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'cls') el.className = v;
+    else if (k === 'text') el.textContent = v;
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else if (k === 'dataset') Object.assign(el.dataset, v);
+    else el.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null)
+    el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  return el;
+}
+
+function baseName(name) {
+  const m = name.match(/^(.+)\/checkpoint-\d+/);
+  return m ? m[1] : name;
+}
+
+function cellBg(t) { return `hsl(${Math.round(t * 120)}, 50%, 84%)`; }
+
+function recolor(tbl) {
+  const rows = [...tbl.querySelectorAll('tbody tr')];
+  const n = tbl.querySelector('thead tr').cells.length;
+  const mins = Array(n).fill(Infinity), maxs = Array(n).fill(-Infinity);
+  for (const row of rows) for (let i = 2; i < row.cells.length; i++) {
+    const v = parseFloat(row.cells[i].dataset.v);
+    if (!isNaN(v)) { mins[i] = Math.min(mins[i], v); maxs[i] = Math.max(maxs[i], v); }
+  }
+  for (const row of rows) for (let i = 2; i < row.cells.length; i++) {
+    const c = row.cells[i], v = parseFloat(c.dataset.v);
+    c.classList.remove('hi', 'lo');
+    if (!isNaN(v) && maxs[i] > mins[i]) {
+      c.style.background = cellBg((v - mins[i]) / (maxs[i] - mins[i]));
+      if (v === maxs[i]) c.classList.add('hi');
+      if (v === mins[i]) c.classList.add('lo');
+    }
+  }
+}
+
+function sortTbl(th) {
+  const tbl = th.closest('table'), idx = [...th.parentNode.children].indexOf(th);
+  const asc = !th.classList.contains('asc');
+  for (const x of th.parentNode.children) x.classList.remove('asc', 'desc');
+  th.classList.add(asc ? 'asc' : 'desc');
+  const tbody = tbl.querySelector('tbody');
+  [...tbody.querySelectorAll('tr')].sort((a, b) => {
+    const av = a.cells[idx]?.dataset.v ?? '', bv = b.cells[idx]?.dataset.v ?? '';
+    const an = parseFloat(av), bn = parseFloat(bv);
+    return (asc ? 1 : -1) * ((!isNaN(an) && !isNaN(bn)) ? an - bn : av.localeCompare(bv));
+  }).forEach(r => tbody.appendChild(r));
+}
+
+fetch('./data.json')
+  .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
+  .then(data => {
+    document.getElementById('loading').remove();
+    const app = document.getElementById('app');
+    app.style.display = '';
+
+    const { experiments, meta } = data;
+    document.getElementById('sub').textContent =
+      `${experiments.length} experiments \u00b7 ${meta.metric} \u00b7 ${meta.tasks.length} domains`;
+
+    // Best experiment per group (by avg)
+    const grps = {};
+    for (const exp of experiments) {
+      const key = baseName(exp.name) + '::' + exp.retriever_size;
+      if (!grps[key] || (exp.avg || 0) > (grps[key].avg || 0)) grps[key] = exp;
+    }
+    const best = Object.values(grps).sort((a, b) => (b.avg || 0) - (a.avg || 0));
+
+    // Leaderboard table
+    const fields = ['experiment', 'retriever_size', ...meta.tasks, 'avg'];
+    const val = (exp, f) => f === 'experiment' ? exp.name
+      : f === 'retriever_size' ? exp.retriever_size
+      : f === 'avg' ? (exp.avg != null ? exp.avg.toFixed(2) : '')
+      : (exp.scores[f] != null ? exp.scores[f].toFixed(2) : '');
+
+    const tbl = h('table');
+    const hrow = h('tr');
+    for (const f of fields)
+      hrow.appendChild(h('th', {text: f.replace(/_/g, ' '), onclick: function() { sortTbl(this); }}));
+    tbl.appendChild(h('thead', null, hrow));
+
+    const tbody = h('tbody');
+    for (const exp of best) {
+      const tr = h('tr');
+      for (const f of fields) {
+        const v = val(exp, f);
+        tr.appendChild(h('td', {dataset: {v}, text: v}));
+      }
+      tbody.appendChild(tr);
+    }
+    tbl.appendChild(tbody);
+
+    app.appendChild(h('h2', {text: 'Leaderboard'}));
+    app.appendChild(h('div', {cls: 'tbl-wrap'}, tbl));
+    requestAnimationFrame(() => recolor(tbl));
+
+    // Top K per domain
+    const K = 5;
+    const grid = h('div', {cls: 'domains'});
+    for (const t of meta.tasks) {
+      // Per-domain best per group
+      const domBest = {};
+      for (const exp of experiments) {
+        if (exp.scores[t] == null) continue;
+        const key = baseName(exp.name) + '::' + exp.retriever_size;
+        if (!domBest[key] || exp.scores[t] > domBest[key].scores[t]) domBest[key] = exp;
+      }
+      const ranked = Object.values(domBest).sort((a, b) => b.scores[t] - a.scores[t]).slice(0, K);
+
+      const ol = h('ol');
+      for (const exp of ranked)
+        ol.appendChild(h('li', null,
+          h('span', {cls: 'name', text: exp.name}),
+          h('span', {cls: 'score', text: exp.scores[t].toFixed(2)})
+        ));
+      grid.appendChild(h('div', {cls: 'dom'},
+        h('div', {cls: 'dom-hdr', text: t.replace(/_/g, ' ')}), ol
+      ));
+    }
+    app.appendChild(h('h2', {text: 'Top ' + K + ' per Domain'}));
+    app.appendChild(grid);
+  })
+  .catch(err => {
+    document.getElementById('loading').innerHTML =
+      `<b>Could not load data.json</b><br><small>${err}</small>`;
+  });
+</script>
+</body>
+</html>
