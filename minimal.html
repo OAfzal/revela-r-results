@@ -9,19 +9,32 @@
 body {
   font-family: system-ui, -apple-system, sans-serif;
   background: #fafafa; color: #1a1a2e; line-height: 1.5;
-  max-width: 1280px; margin: 0 auto; padding: 32px 24px 64px;
+  max-width: 1320px; margin: 0 auto; padding: 32px 24px 64px;
 }
 
-header { margin-bottom: 40px; }
+header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 36px; }
 h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.02em; }
 h1 span { color: #6366f1; }
-.subtitle { color: #64748b; font-size: .875rem; margin-top: 2px; }
+.subtitle { color: #64748b; font-size: .8125rem; }
+.full-link {
+  margin-left: auto; font-size: .75rem; color: #6366f1;
+  text-decoration: none; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 10px;
+}
+.full-link:hover { background: #eef2ff; }
 
 h2 {
   font-size: 1rem; font-weight: 600; letter-spacing: -.01em;
   margin: 40px 0 12px; padding-bottom: 8px;
   border-bottom: 2px solid #e2e8f0;
 }
+
+.search {
+  width: 100%; padding: 9px 14px 9px 34px; font-size: .8125rem;
+  border: 1px solid #e2e8f0; border-radius: 8px; outline: none;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") 12px center no-repeat;
+  margin-bottom: 10px; max-width: 280px; transition: border-color .15s;
+}
+.search:focus { border-color: #6366f1; }
 
 .tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
 table { border-collapse: collapse; width: 100%; font-size: .8125rem; white-space: nowrap; }
@@ -32,23 +45,49 @@ thead th {
   padding: 10px 12px; text-align: right;
   border-bottom: 2px solid #e2e8f0; cursor: pointer; user-select: none;
 }
-thead th:first-child, thead th:nth-child(2) { text-align: left; }
+thead th:nth-child(1), thead th:nth-child(2), thead th:nth-child(3) { text-align: left; }
 thead th.asc::after { content: ' \2191'; }
 thead th.desc::after { content: ' \2193'; }
+thead th:last-child { background: #f0f0ff; }
 tbody td {
   padding: 7px 12px; border-bottom: 1px solid #f1f5f9;
   text-align: right; font-variant-numeric: tabular-nums;
 }
-tbody td:first-child, tbody td:nth-child(2) { text-align: left; }
+tbody td:nth-child(1), tbody td:nth-child(2), tbody td:nth-child(3) { text-align: left; }
+tbody td:last-child { background: rgba(99,102,241,.04); font-weight: 600; }
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: #f1f5f9 !important; }
 td.hi { outline: 2px solid #6366f1; outline-offset: -2px; font-weight: 700; }
 td.lo { outline: 2px solid #ef4444; outline-offset: -2px; }
 
-.domains {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;
+/* Sticky rank + name columns */
+thead th:nth-child(1), tbody td:nth-child(1) {
+  position: sticky; left: 0; z-index: 3; background: #f8fafc; min-width: 32px;
 }
-.dom { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+thead th:nth-child(2), tbody td:nth-child(2) {
+  position: sticky; left: 32px; z-index: 3; background: #fff;
+  border-right: 1px solid #e2e8f0; min-width: 180px;
+}
+thead th:nth-child(1) { z-index: 4; }
+thead th:nth-child(2) { z-index: 4; }
+tbody tr:hover td:nth-child(1), tbody tr:hover td:nth-child(2) { background: #f1f5f9 !important; }
+
+.rank { color: #94a3b8; font-size: .6875rem; font-weight: 700; }
+.rank.gold { color: #d97706; }
+.rank.silver { color: #6b7280; }
+.rank.bronze { color: #b45309; }
+.size-badge {
+  display: inline-block; font-size: .6875rem; font-weight: 600;
+  padding: 1px 8px; border-radius: 999px;
+}
+.size-badge.s3B { background: #eef2ff; color: #6366f1; }
+.size-badge.s8B { background: #fef3c7; color: #b45309; }
+
+.domains {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px;
+}
+.dom { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; transition: box-shadow .15s; }
+.dom:hover { box-shadow: 0 2px 12px rgba(0,0,0,.06); }
 .dom-hdr {
   background: linear-gradient(135deg, #6366f1, #818cf8);
   padding: 8px 12px; color: #fff; font-size: .8125rem;
@@ -57,7 +96,7 @@ td.lo { outline: 2px solid #ef4444; outline-offset: -2px; }
 .dom ol { list-style: none; padding: 6px 10px; counter-reset: r; }
 .dom li {
   display: flex; align-items: baseline; gap: 6px;
-  padding: 4px 0; border-bottom: 1px solid #f1f5f9;
+  padding: 5px 0; border-bottom: 1px solid #f1f5f9;
   counter-increment: r; font-size: .8125rem;
 }
 .dom li:last-child { border-bottom: none; }
@@ -65,8 +104,11 @@ td.lo { outline: 2px solid #ef4444; outline-offset: -2px; }
   content: counter(r); font-size: .6875rem; font-weight: 700;
   color: #94a3b8; min-width: 14px; text-align: center;
 }
+.dom li:nth-child(1)::before { color: #d97706; }
+.dom li:nth-child(2)::before { color: #6b7280; }
+.dom li:nth-child(3)::before { color: #b45309; }
 .dom .name { flex: 1; color: #334155; word-break: break-all; }
-.dom .score {
+.dom .sc {
   background: #eef2ff; color: #6366f1; border-radius: 999px;
   padding: 1px 8px; font-size: .75rem; font-weight: 600; white-space: nowrap;
 }
@@ -78,7 +120,8 @@ td.lo { outline: 2px solid #ef4444; outline-offset: -2px; }
 
 <header>
   <h1><span>BRIGHT</span> Results</h1>
-  <div class="subtitle" id="sub"></div>
+  <span class="subtitle" id="sub"></span>
+  <a class="full-link" href="index.html">Full Dashboard &rarr;</a>
 </header>
 
 <div id="loading">Loading data.json &hellip;</div>
@@ -90,6 +133,7 @@ function h(tag, attrs, ...kids) {
   if (attrs) for (const [k, v] of Object.entries(attrs)) {
     if (k === 'cls') el.className = v;
     else if (k === 'text') el.textContent = v;
+    else if (k === 'html') el.innerHTML = v;
     else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
     else if (k === 'dataset') Object.assign(el.dataset, v);
     else el.setAttribute(k, v);
@@ -99,28 +143,27 @@ function h(tag, attrs, ...kids) {
   return el;
 }
 
-function baseName(name) {
-  const m = name.match(/^(.+)\/checkpoint-\d+/);
-  return m ? m[1] : name;
-}
-
+function baseName(n) { const m = n.match(/^(.+)\/checkpoint-\d+/); return m ? m[1] : n; }
 function cellBg(t) { return `hsl(${Math.round(t * 120)}, 50%, 84%)`; }
 
 function recolor(tbl) {
-  const rows = [...tbl.querySelectorAll('tbody tr')];
+  const rows = [...tbl.querySelectorAll('tbody tr')].filter(r => r.style.display !== 'none');
   const n = tbl.querySelector('thead tr').cells.length;
   const mins = Array(n).fill(Infinity), maxs = Array(n).fill(-Infinity);
-  for (const row of rows) for (let i = 2; i < row.cells.length; i++) {
+  for (const row of rows) for (let i = 3; i < row.cells.length; i++) {
     const v = parseFloat(row.cells[i].dataset.v);
     if (!isNaN(v)) { mins[i] = Math.min(mins[i], v); maxs[i] = Math.max(maxs[i], v); }
   }
-  for (const row of rows) for (let i = 2; i < row.cells.length; i++) {
-    const c = row.cells[i], v = parseFloat(c.dataset.v);
-    c.classList.remove('hi', 'lo');
-    if (!isNaN(v) && maxs[i] > mins[i]) {
-      c.style.background = cellBg((v - mins[i]) / (maxs[i] - mins[i]));
-      if (v === maxs[i]) c.classList.add('hi');
-      if (v === mins[i]) c.classList.add('lo');
+  for (const row of tbl.querySelectorAll('tbody tr')) {
+    const vis = row.style.display !== 'none';
+    for (let i = 3; i < row.cells.length; i++) {
+      const c = row.cells[i], v = parseFloat(c.dataset.v);
+      c.classList.remove('hi', 'lo'); c.style.background = '';
+      if (!isNaN(v) && maxs[i] > mins[i] && vis) {
+        c.style.background = cellBg((v - mins[i]) / (maxs[i] - mins[i]));
+        if (v === maxs[i]) c.classList.add('hi');
+        if (v === mins[i]) c.classList.add('lo');
+      }
     }
   }
 }
@@ -136,6 +179,18 @@ function sortTbl(th) {
     const an = parseFloat(av), bn = parseFloat(bv);
     return (asc ? 1 : -1) * ((!isNaN(an) && !isNaN(bn)) ? an - bn : av.localeCompare(bv));
   }).forEach(r => tbody.appendChild(r));
+  updateRanks(tbl);
+}
+
+function updateRanks(tbl) {
+  let rank = 0;
+  for (const row of tbl.querySelectorAll('tbody tr')) {
+    if (row.style.display === 'none') continue;
+    rank++;
+    const c = row.cells[0];
+    c.textContent = rank;
+    c.className = 'rank' + (rank === 1 ? ' gold' : rank === 2 ? ' silver' : rank === 3 ? ' bronze' : '');
+  }
 }
 
 fetch('./data.json')
@@ -144,12 +199,10 @@ fetch('./data.json')
     document.getElementById('loading').remove();
     const app = document.getElementById('app');
     app.style.display = '';
-
     const { experiments, meta } = data;
     document.getElementById('sub').textContent =
       `${experiments.length} experiments \u00b7 ${meta.metric} \u00b7 ${meta.tasks.length} domains`;
 
-    // Best experiment per group (by avg)
     const grps = {};
     for (const exp of experiments) {
       const key = baseName(exp.name) + '::' + exp.retriever_size;
@@ -157,39 +210,50 @@ fetch('./data.json')
     }
     const best = Object.values(grps).sort((a, b) => (b.avg || 0) - (a.avg || 0));
 
-    // Leaderboard table
-    const fields = ['experiment', 'retriever_size', ...meta.tasks, 'avg'];
-    const val = (exp, f) => f === 'experiment' ? exp.name
-      : f === 'retriever_size' ? exp.retriever_size
-      : f === 'avg' ? (exp.avg != null ? exp.avg.toFixed(2) : '')
-      : (exp.scores[f] != null ? exp.scores[f].toFixed(2) : '');
-
-    const tbl = h('table');
+    const fields = ['#', 'experiment', 'size', ...meta.tasks, 'avg'];
+    const tbl = h('table', {id: 'lb'});
     const hrow = h('tr');
     for (const f of fields)
       hrow.appendChild(h('th', {text: f.replace(/_/g, ' '), onclick: function() { sortTbl(this); }}));
     tbl.appendChild(h('thead', null, hrow));
 
     const tbody = h('tbody');
-    for (const exp of best) {
+    best.forEach((exp, i) => {
       const tr = h('tr');
-      for (const f of fields) {
-        const v = val(exp, f);
+      const rc = (i < 3) ? ['gold','silver','bronze'][i] : '';
+      tr.appendChild(h('td', {cls: 'rank' + (rc ? ' ' + rc : ''), dataset: {v: String(i+1)}, text: String(i+1)}));
+      tr.appendChild(h('td', {dataset: {v: exp.name}, text: exp.name}));
+      const badge = h('td', {dataset: {v: exp.retriever_size}});
+      badge.appendChild(h('span', {cls: 'size-badge s' + exp.retriever_size, text: exp.retriever_size}));
+      tr.appendChild(badge);
+      for (const t of meta.tasks) {
+        const s = exp.scores[t]; const v = s != null ? s.toFixed(2) : '';
         tr.appendChild(h('td', {dataset: {v}, text: v}));
       }
+      const av = exp.avg != null ? exp.avg.toFixed(2) : '';
+      tr.appendChild(h('td', {dataset: {v: av}, text: av}));
       tbody.appendChild(tr);
-    }
+    });
     tbl.appendChild(tbody);
 
+    const search = h('input', {cls: 'search', type: 'text', placeholder: 'Filter experiments\u2026',
+      oninput: e => {
+        const q = e.target.value.toLowerCase();
+        for (const row of tbl.querySelectorAll('tbody tr')) {
+          row.style.display = row.cells[1].dataset.v.toLowerCase().includes(q) ? '' : 'none';
+        }
+        recolor(tbl); updateRanks(tbl);
+      }
+    });
+
     app.appendChild(h('h2', {text: 'Leaderboard'}));
+    app.appendChild(search);
     app.appendChild(h('div', {cls: 'tbl-wrap'}, tbl));
     requestAnimationFrame(() => recolor(tbl));
 
-    // Top K per domain
     const K = 5;
     const grid = h('div', {cls: 'domains'});
     for (const t of meta.tasks) {
-      // Per-domain best per group
       const domBest = {};
       for (const exp of experiments) {
         if (exp.scores[t] == null) continue;
@@ -197,12 +261,11 @@ fetch('./data.json')
         if (!domBest[key] || exp.scores[t] > domBest[key].scores[t]) domBest[key] = exp;
       }
       const ranked = Object.values(domBest).sort((a, b) => b.scores[t] - a.scores[t]).slice(0, K);
-
       const ol = h('ol');
       for (const exp of ranked)
         ol.appendChild(h('li', null,
           h('span', {cls: 'name', text: exp.name}),
-          h('span', {cls: 'score', text: exp.scores[t].toFixed(2)})
+          h('span', {cls: 'sc', text: exp.scores[t].toFixed(2)})
         ));
       grid.appendChild(h('div', {cls: 'dom'},
         h('div', {cls: 'dom-hdr', text: t.replace(/_/g, ' ')}), ol
