@@ -79,7 +79,8 @@ tbody td {
 }
 tbody td:nth-child(1), tbody td:nth-child(2), tbody td:nth-child(3) { text-align: left; }
 tbody td:last-child { background: rgba(99,102,241,.04); font-weight: 600; }
-tbody tr:hover td { background: #f1f5f9 !important; }
+tbody tr:hover td { background: #e0e7ff !important; }
+tbody tr:hover { outline: 2px solid #6366f1; outline-offset: -2px; }
 td.hi { outline: 2px solid #6366f1; outline-offset: -2px; font-weight: 700; }
 td.lo { outline: 2px solid #ef4444; outline-offset: -2px; }
 .col-hidden { display: none; }
@@ -94,7 +95,7 @@ thead th:nth-child(2), tbody td:nth-child(2) {
 }
 thead th:nth-child(1) { z-index: 4; }
 thead th:nth-child(2) { z-index: 4; }
-tbody tr:hover td:nth-child(1), tbody tr:hover td:nth-child(2) { background: #f1f5f9 !important; }
+tbody tr:hover td:nth-child(1), tbody tr:hover td:nth-child(2) { background: #e0e7ff !important; }
 
 .rank { color: #94a3b8; font-size: .6875rem; font-weight: 700; }
 .rank.gold { color: #d97706; }
@@ -246,32 +247,41 @@ function taskCategory(t) { return CATEGORIES.find(c => c.tasks.includes(t)); }
 
 function recolor() {
   if (!tbl) return;
-  const rows = [...tbl.querySelectorAll('tbody tr')].filter(r => r.style.display !== 'none');
-  const n = tbl.querySelector('thead tr:last-child').cells.length;
+  const tbody = tbl.querySelector('tbody');
+  const allRows = [...tbody.querySelectorAll('tr')];
+  const visRows = allRows.filter(r => r.style.display !== 'none');
+  if (!visRows.length) return;
+  const n = visRows[0].cells.length;
   const mins = Array(n).fill(Infinity), maxs = Array(n).fill(-Infinity);
-  for (const row of rows) for (let i = 3; i < row.cells.length; i++) {
-    if (row.cells[i].classList.contains('col-hidden')) continue;
-    const v = parseFloat(row.cells[i].dataset.v);
+  for (const row of visRows) for (let i = 3; i < n; i++) {
+    const c = row.cells[i];
+    if (!c || c.classList.contains('col-hidden')) continue;
+    const v = parseFloat(c.dataset.v);
     if (!isNaN(v)) { mins[i] = Math.min(mins[i], v); maxs[i] = Math.max(maxs[i], v); }
   }
-  for (const row of tbl.querySelectorAll('tbody tr')) {
+  for (const row of allRows) {
     const vis = row.style.display !== 'none';
-    for (let i = 3; i < row.cells.length; i++) {
-      const c = row.cells[i], v = parseFloat(c.dataset.v);
+    for (let i = 3; i < n; i++) {
+      const c = row.cells[i];
+      if (!c) continue;
       c.classList.remove('hi', 'lo'); c.style.background = '';
       if (c.classList.contains('col-hidden')) continue;
-      if (!isNaN(v) && maxs[i] > mins[i] && vis) {
-        c.style.background = cellBg((v - mins[i]) / (maxs[i] - mins[i]));
-        if (v === maxs[i]) c.classList.add('hi');
-        if (v === mins[i]) c.classList.add('lo');
+      if (!isNaN(parseFloat(c.dataset.v)) && maxs[i] > mins[i] && vis) {
+        const t = (parseFloat(c.dataset.v) - mins[i]) / (maxs[i] - mins[i]);
+        c.style.background = cellBg(t);
+        if (parseFloat(c.dataset.v) === maxs[i]) c.classList.add('hi');
+        if (parseFloat(c.dataset.v) === mins[i]) c.classList.add('lo');
       }
     }
   }
 }
 
 function toggleCol(colIdx, show) {
-  for (const row of tbl.querySelectorAll('tr'))
-    row.cells[colIdx]?.classList.toggle('col-hidden', !show);
+  // Skip cat-row (first thead row) — its colspan cells don't match column indices
+  const colHdr = tbl.querySelector('thead tr:last-child');
+  if (colHdr.cells[colIdx]) colHdr.cells[colIdx].classList.toggle('col-hidden', !show);
+  for (const row of tbl.querySelectorAll('tbody tr'))
+    if (row.cells[colIdx]) row.cells[colIdx].classList.toggle('col-hidden', !show);
   recolor();
 }
 
@@ -463,9 +473,14 @@ fetch('./data.json')
     catRow.appendChild(h('th', {cls: 'cat-blank', text: ''}));
     thead.appendChild(catRow);
 
+    const catBg = {se: '#f0fdf4', code: '#fffbeb', thm: '#f5f3ff'};
     const hrow = h('tr');
-    for (const f of FIELDS)
-      hrow.appendChild(h('th', {text: f.replace(/_/g, ' '), onclick: function() { sortTbl(this); }}));
+    for (const f of FIELDS) {
+      const th = h('th', {text: f.replace(/_/g, ' '), onclick: function() { sortTbl(this); }});
+      const cat = taskCategory(f);
+      if (cat) th.style.background = catBg[cat.key];
+      hrow.appendChild(th);
+    }
     thead.appendChild(hrow);
     tbl.appendChild(thead);
     tbl.appendChild(h('tbody'));
