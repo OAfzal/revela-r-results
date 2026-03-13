@@ -453,9 +453,13 @@ fetch('./data.json')
     const thead = h('thead');
 
     const catRow = h('tr', {cls: 'cat-row'});
+    const catRowCells = {};
     catRow.appendChild(h('th', {cls: 'cat-blank', colspan: '3', text: ''}));
-    for (const cat of CATEGORIES)
-      catRow.appendChild(h('th', {cls: 'cat-' + cat.key, colspan: String(cat.tasks.length), text: cat.label}));
+    for (const cat of CATEGORIES) {
+      const th = h('th', {cls: 'cat-' + cat.key, colspan: String(cat.tasks.length), text: cat.label});
+      catRowCells[cat.key] = th;
+      catRow.appendChild(th);
+    }
     catRow.appendChild(h('th', {cls: 'cat-blank', text: ''}));
     thead.appendChild(catRow);
 
@@ -492,6 +496,7 @@ fetch('./data.json')
       catPills.appendChild(h('button', {cls: 'pill on', text: cat.label, onclick: e => {
         e.target.classList.toggle('on');
         const show = e.target.classList.contains('on');
+        catRowCells[cat.key].classList.toggle('col-hidden', !show);
         for (const t of cat.tasks) {
           const btn = colBtnsByTask[t];
           btn.classList.toggle('on', show);
