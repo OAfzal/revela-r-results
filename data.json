@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated": "2026-03-13T03:19:35",
+    "generated": "2026-03-13T03:50:42",
     "metric": "NDCG@10",
     "tasks": [
       "biology",
@@ -40,7 +40,7 @@
       "avg": 20.381
     },
     {
-      "name": "acereason/checkpoint-1000",
+      "name": "acereason_math/checkpoint-1000",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 1000,
@@ -61,7 +61,7 @@
       "avg": 16.236
     },
     {
-      "name": "acereason/checkpoint-1500",
+      "name": "acereason_math/checkpoint-1500",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 1500,
@@ -82,7 +82,7 @@
       "avg": 19.046
     },
     {
-      "name": "acereason/checkpoint-2000",
+      "name": "acereason_math/checkpoint-2000",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 2000,
@@ -103,7 +103,7 @@
       "avg": 16.711
     },
     {
-      "name": "acereason/checkpoint-2500",
+      "name": "acereason_math/checkpoint-2500",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 2500,
@@ -124,7 +124,7 @@
       "avg": 17.608
     },
     {
-      "name": "acereason/checkpoint-3000",
+      "name": "acereason_math/checkpoint-3000",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 3000,
@@ -145,7 +145,7 @@
       "avg": 16.458
     },
     {
-      "name": "acereason/checkpoint-3500",
+      "name": "acereason_math/checkpoint-3500",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 3500,
@@ -166,7 +166,7 @@
       "avg": 19.073
     },
     {
-      "name": "acereason/checkpoint-4000",
+      "name": "acereason_math/checkpoint-4000",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 4000,
@@ -187,7 +187,7 @@
       "avg": 19.333
     },
     {
-      "name": "acereason/checkpoint-4500",
+      "name": "acereason_math/checkpoint-4500",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 4500,
@@ -208,7 +208,7 @@
       "avg": 18.068
     },
     {
-      "name": "acereason/checkpoint-500",
+      "name": "acereason_math/checkpoint-500",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 500,
@@ -229,7 +229,7 @@
       "avg": 16.555
     },
     {
-      "name": "acereason/checkpoint-5000",
+      "name": "acereason_math/checkpoint-5000",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 5000,
@@ -250,7 +250,7 @@
       "avg": 19.065
     },
     {
-      "name": "acereason/checkpoint-5500",
+      "name": "acereason_math/checkpoint-5500",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 5500,
@@ -271,7 +271,7 @@
       "avg": 19.061
     },
     {
-      "name": "acereason/checkpoint-6000",
+      "name": "acereason_math/checkpoint-6000",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 6000,
@@ -292,7 +292,7 @@
       "avg": 19.658
     },
     {
-      "name": "acereason/checkpoint-6500",
+      "name": "acereason_math/checkpoint-6500",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 6500,
@@ -313,7 +313,7 @@
       "avg": 19.454
     },
     {
-      "name": "acereason/checkpoint-7000",
+      "name": "acereason_math/checkpoint-7000",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 7000,
@@ -334,7 +334,7 @@
       "avg": 20.854
     },
     {
-      "name": "acereason/checkpoint-7500",
+      "name": "acereason_math/checkpoint-7500",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 7500,
@@ -355,7 +355,7 @@
       "avg": 19.622
     },
     {
-      "name": "acereason/checkpoint-8000",
+      "name": "acereason_math/checkpoint-8000",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 8000,
@@ -376,7 +376,7 @@
       "avg": 20.151
     },
     {
-      "name": "acereason/checkpoint-8500",
+      "name": "acereason_math/checkpoint-8500",
       "retriever_size": "3B",
       "family": "acereason",
       "checkpoint_step": 8500,
@@ -1573,27 +1573,6 @@
       "avg": 17.793
     },
     {
-      "name": "bright",
-      "retriever_size": "3B",
-      "family": "baseline",
-      "checkpoint_step": null,
-      "scores": {
-        "biology": 29.567,
-        "earth_science": 33.163,
-        "economics": 15.894,
-        "pony": 6.434,
-        "psychology": 18.424,
-        "robotics": 13.85,
-        "stackoverflow": 16.39,
-        "sustainable_living": 19.723,
-        "aops": 7.453,
-        "leetcode": 23.566,
-        "theoremqa_theorems": 7.806,
-        "theoremqa_questions": 18.604
-      },
-      "avg": 17.573
-    },
-    {
       "name": "bright_all/checkpoint-1000_3B",
       "retriever_size": "3B",
       "family": "baseline",
@@ -1991,6 +1970,27 @@
         "theoremqa_questions": 29.926
       },
       "avg": 16.433
+    },
+    {
+      "name": "old_bright",
+      "retriever_size": "3B",
+      "family": "baseline",
+      "checkpoint_step": null,
+      "scores": {
+        "biology": 29.567,
+        "earth_science": 33.163,
+        "economics": 15.894,
+        "pony": 6.434,
+        "psychology": 18.424,
+        "robotics": 13.85,
+        "stackoverflow": 16.39,
+        "sustainable_living": 19.723,
+        "aops": 7.453,
+        "leetcode": 23.566,
+        "theoremqa_theorems": 7.806,
+        "theoremqa_questions": 18.604
+      },
+      "avg": 17.573
     },
     {
       "name": "reasonir",
@@ -2854,7 +2854,7 @@
       "avg": 21.009
     },
     {
-      "name": "wiki_bright/checkpoint-1000_3B",
+      "name": "wiki_bright_all/checkpoint-1000_3B",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": 1000,
@@ -2875,7 +2875,7 @@
       "avg": 19.106
     },
     {
-      "name": "wiki_bright/checkpoint-1500_3B",
+      "name": "wiki_bright_all/checkpoint-1500_3B",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": 1500,
@@ -2896,7 +2896,7 @@
       "avg": 19.092
     },
     {
-      "name": "wiki_bright/checkpoint-2000_3B",
+      "name": "wiki_bright_all/checkpoint-2000_3B",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": 2000,
@@ -2917,7 +2917,7 @@
       "avg": 19.166
     },
     {
-      "name": "wiki_bright/checkpoint-2500_3B",
+      "name": "wiki_bright_all/checkpoint-2500_3B",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": 2500,
@@ -2938,7 +2938,7 @@
       "avg": 16.231
     },
     {
-      "name": "wiki_bright/checkpoint-3000_3B",
+      "name": "wiki_bright_all/checkpoint-3000_3B",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": 3000,
@@ -2959,7 +2959,7 @@
       "avg": 22.298
     },
     {
-      "name": "wiki_bright/checkpoint-3500_3B",
+      "name": "wiki_bright_all/checkpoint-3500_3B",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": 3500,
@@ -2980,7 +2980,7 @@
       "avg": 20.056
     },
     {
-      "name": "wiki_bright/checkpoint-4000_3B",
+      "name": "wiki_bright_all/checkpoint-4000_3B",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": 4000,
@@ -3001,7 +3001,7 @@
       "avg": 20.425
     },
     {
-      "name": "wiki_bright/checkpoint-4500_3B",
+      "name": "wiki_bright_all/checkpoint-4500_3B",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": 4500,
@@ -3022,7 +3022,7 @@
       "avg": 19.518
     },
     {
-      "name": "wiki_bright/checkpoint-5000_3B",
+      "name": "wiki_bright_all/checkpoint-5000_3B",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": 5000,
@@ -3043,7 +3043,7 @@
       "avg": 16.134
     },
     {
-      "name": "wiki_bright/checkpoint-500_3B",
+      "name": "wiki_bright_all/checkpoint-500_3B",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": 500,
@@ -3064,7 +3064,7 @@
       "avg": 19.61
     },
     {
-      "name": "wiki_bright/checkpoint-5500_3B",
+      "name": "wiki_bright_all/checkpoint-5500_3B",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": 5500,
@@ -4261,7 +4261,7 @@
       "avg": 15.309
     },
     {
-      "name": "wiki_ck5000_then_bright",
+      "name": "wiki_ck5000_then_old_bright",
       "retriever_size": "3B",
       "family": "wiki",
       "checkpoint_step": null,
@@ -4304,25 +4304,25 @@
     }
   ],
   "groups": {
-    "acereason": {
+    "acereason_math": {
       "3B": [
-        "acereason/checkpoint-500",
-        "acereason/checkpoint-1000",
-        "acereason/checkpoint-1500",
-        "acereason/checkpoint-2000",
-        "acereason/checkpoint-2500",
-        "acereason/checkpoint-3000",
-        "acereason/checkpoint-3500",
-        "acereason/checkpoint-4000",
-        "acereason/checkpoint-4500",
-        "acereason/checkpoint-5000",
-        "acereason/checkpoint-5500",
-        "acereason/checkpoint-6000",
-        "acereason/checkpoint-6500",
-        "acereason/checkpoint-7000",
-        "acereason/checkpoint-7500",
-        "acereason/checkpoint-8000",
-        "acereason/checkpoint-8500"
+        "acereason_math/checkpoint-500",
+        "acereason_math/checkpoint-1000",
+        "acereason_math/checkpoint-1500",
+        "acereason_math/checkpoint-2000",
+        "acereason_math/checkpoint-2500",
+        "acereason_math/checkpoint-3000",
+        "acereason_math/checkpoint-3500",
+        "acereason_math/checkpoint-4000",
+        "acereason_math/checkpoint-4500",
+        "acereason_math/checkpoint-5000",
+        "acereason_math/checkpoint-5500",
+        "acereason_math/checkpoint-6000",
+        "acereason_math/checkpoint-6500",
+        "acereason_math/checkpoint-7000",
+        "acereason_math/checkpoint-7500",
+        "acereason_math/checkpoint-8000",
+        "acereason_math/checkpoint-8500"
       ]
     },
     "acereason_math_code_shuf": {
@@ -4471,19 +4471,19 @@
         "wiki/checkpoint-10000_8B"
       ]
     },
-    "wiki_bright": {
+    "wiki_bright_all": {
       "3B": [
-        "wiki_bright/checkpoint-500_3B",
-        "wiki_bright/checkpoint-1000_3B",
-        "wiki_bright/checkpoint-1500_3B",
-        "wiki_bright/checkpoint-2000_3B",
-        "wiki_bright/checkpoint-2500_3B",
-        "wiki_bright/checkpoint-3000_3B",
-        "wiki_bright/checkpoint-3500_3B",
-        "wiki_bright/checkpoint-4000_3B",
-        "wiki_bright/checkpoint-4500_3B",
-        "wiki_bright/checkpoint-5000_3B",
-        "wiki_bright/checkpoint-5500_3B"
+        "wiki_bright_all/checkpoint-500_3B",
+        "wiki_bright_all/checkpoint-1000_3B",
+        "wiki_bright_all/checkpoint-1500_3B",
+        "wiki_bright_all/checkpoint-2000_3B",
+        "wiki_bright_all/checkpoint-2500_3B",
+        "wiki_bright_all/checkpoint-3000_3B",
+        "wiki_bright_all/checkpoint-3500_3B",
+        "wiki_bright_all/checkpoint-4000_3B",
+        "wiki_bright_all/checkpoint-4500_3B",
+        "wiki_bright_all/checkpoint-5000_3B",
+        "wiki_bright_all/checkpoint-5500_3B"
       ]
     },
     "wiki_ck10000_then_acereason_math": {
