@@ -247,7 +247,7 @@ function taskCategory(t) { return CATEGORIES.find(c => c.tasks.includes(t)); }
 function recolor() {
   if (!tbl) return;
   const rows = [...tbl.querySelectorAll('tbody tr')].filter(r => r.style.display !== 'none');
-  const n = tbl.querySelector('thead tr').cells.length;
+  const n = tbl.querySelector('thead tr:last-child').cells.length;
   const mins = Array(n).fill(Infinity), maxs = Array(n).fill(-Infinity);
   for (const row of rows) for (let i = 3; i < row.cells.length; i++) {
     if (row.cells[i].classList.contains('col-hidden')) continue;
