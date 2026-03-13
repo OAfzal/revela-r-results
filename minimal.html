@@ -470,19 +470,41 @@ fetch('./data.json')
       oninput: e => { searchQuery = e.target.value.toLowerCase(); rebuildLeaderboard(); }
     });
 
+    const catPills = h('div', {cls: 'pill-group'});
     const colPills = h('div', {cls: 'col-pills'});
+
+    // Build individual column pills first so category pills can reference them
+    const colBtnsByTask = {};
     tasks.forEach((t, ti) => {
       const colIdx = ti + 3;
       const cat = taskCategory(t);
       if (ti > 0 && cat !== taskCategory(tasks[ti - 1]))
         colPills.appendChild(h('span', {cls: 'cat-sep', text: '|'}));
-      colPills.appendChild(h('button', {cls: 'col-pill on', text: t.replace(/_/g, ' '), dataset: {col: String(colIdx)},
+      const btn = h('button', {cls: 'col-pill on', text: t.replace(/_/g, ' '), dataset: {col: String(colIdx)},
         onclick: e => { e.target.classList.toggle('on'); toggleCol(colIdx, e.target.classList.contains('on')); }
-      }));
+      });
+      colBtnsByTask[t] = btn;
+      colPills.appendChild(btn);
     });
 
+    // Category toggle pills
+    for (const cat of CATEGORIES) {
+      catPills.appendChild(h('button', {cls: 'pill on', text: cat.label, onclick: e => {
+        e.target.classList.toggle('on');
+        const show = e.target.classList.contains('on');
+        for (const t of cat.tasks) {
+          const btn = colBtnsByTask[t];
+          btn.classList.toggle('on', show);
+          toggleCol(parseInt(btn.dataset.col), show);
+        }
+      }}));
+    }
+
     app.appendChild(h('h2', {text: 'Leaderboard'}));
-    app.appendChild(h('div', {cls: 'toolbar'}, search, h('span', {cls: 'toolbar-label', text: 'Columns:'}), colPills));
+    app.appendChild(h('div', {cls: 'toolbar'}, search,
+      h('span', {cls: 'toolbar-label', text: 'Categories:'}), catPills,
+      h('span', {cls: 'toolbar-label', text: 'Columns:'}), colPills
+    ));
     app.appendChild(h('div', {cls: 'tbl-wrap'}, tbl));
 
     // Top K
