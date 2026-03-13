@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated": "2026-03-11T11:25:51",
+    "generated": "2026-03-13T03:19:35",
     "metric": "NDCG@10",
     "tasks": [
       "biology",
@@ -1930,6 +1930,69 @@
       "avg": 17.471
     },
     {
+      "name": "bright_all_balanced_0.3/checkpoint-7518_3B",
+      "retriever_size": "3B",
+      "family": "baseline",
+      "checkpoint_step": 7518,
+      "scores": {
+        "biology": 9.971,
+        "earth_science": 12.847,
+        "economics": 12.374,
+        "pony": 0.151,
+        "psychology": 10.056,
+        "robotics": 4.735,
+        "stackoverflow": 11.338,
+        "sustainable_living": 9.339,
+        "aops": 5.053,
+        "leetcode": 3.346,
+        "theoremqa_theorems": 0.781,
+        "theoremqa_questions": 6.471
+      },
+      "avg": 7.205
+    },
+    {
+      "name": "bright_all_balanced_0.7/checkpoint-7518_3B",
+      "retriever_size": "3B",
+      "family": "baseline",
+      "checkpoint_step": 7518,
+      "scores": {
+        "biology": 28.884,
+        "earth_science": 26.577,
+        "economics": 12.851,
+        "pony": 0.0,
+        "psychology": 13.764,
+        "robotics": 5.453,
+        "stackoverflow": 11.179,
+        "sustainable_living": 11.266,
+        "aops": 4.167,
+        "leetcode": 3.473,
+        "theoremqa_theorems": 0.269,
+        "theoremqa_questions": 6.571
+      },
+      "avg": 10.371
+    },
+    {
+      "name": "codefeedback_q_d/checkpoint-1223_3B",
+      "retriever_size": "3B",
+      "family": "baseline",
+      "checkpoint_step": 1223,
+      "scores": {
+        "biology": 17.166,
+        "earth_science": 21.415,
+        "economics": 16.75,
+        "pony": 1.659,
+        "psychology": 17.532,
+        "robotics": 11.62,
+        "stackoverflow": 14.048,
+        "sustainable_living": 17.903,
+        "aops": 10.939,
+        "leetcode": 24.474,
+        "theoremqa_theorems": 13.759,
+        "theoremqa_questions": 29.926
+      },
+      "avg": 16.433
+    },
+    {
       "name": "reasonir",
       "retriever_size": "3B",
       "family": "baseline",
@@ -3064,6 +3127,27 @@
       "avg": 19.924
     },
     {
+      "name": "wiki_ck10000_then_acereason_math/checkpoint-10000_3B",
+      "retriever_size": "3B",
+      "family": "wiki",
+      "checkpoint_step": 10000,
+      "scores": {
+        "biology": 36.869,
+        "earth_science": 49.58,
+        "economics": 21.188,
+        "pony": 3.156,
+        "psychology": 27.058,
+        "robotics": 17.181,
+        "stackoverflow": 22.232,
+        "sustainable_living": 21.879,
+        "aops": 9.096,
+        "leetcode": 29.187,
+        "theoremqa_theorems": 9.92,
+        "theoremqa_questions": 21.401
+      },
+      "avg": 22.396
+    },
+    {
       "name": "wiki_ck10000_then_acereason_math/checkpoint-1500",
       "retriever_size": "3B",
       "family": "wiki",
@@ -3461,6 +3545,27 @@
         "theoremqa_questions": 16.43
       },
       "avg": 19.623
+    },
+    {
+      "name": "wiki_ck10000_then_acereason_math_code_shuf/checkpoint-10000_3B",
+      "retriever_size": "3B",
+      "family": "wiki",
+      "checkpoint_step": 10000,
+      "scores": {
+        "biology": 36.809,
+        "earth_science": 46.707,
+        "economics": 20.964,
+        "pony": 1.153,
+        "psychology": 26.807,
+        "robotics": 17.877,
+        "stackoverflow": 20.805,
+        "sustainable_living": 21.469,
+        "aops": 8.986,
+        "leetcode": 24.904,
+        "theoremqa_theorems": 9.746,
+        "theoremqa_questions": 16.43
+      },
+      "avg": 21.055
     },
     {
       "name": "wiki_ck10000_then_acereason_math_code_shuf/checkpoint-1500",
@@ -4306,6 +4411,21 @@
         "bright_all/checkpoint-7518_3B"
       ]
     },
+    "bright_all_balanced_0.3": {
+      "3B": [
+        "bright_all_balanced_0.3/checkpoint-7518_3B"
+      ]
+    },
+    "bright_all_balanced_0.7": {
+      "3B": [
+        "bright_all_balanced_0.7/checkpoint-7518_3B"
+      ]
+    },
+    "codefeedback_q_d": {
+      "3B": [
+        "codefeedback_q_d/checkpoint-1223_3B"
+      ]
+    },
     "wiki": {
       "3B": [
         "wiki/checkpoint-500",
@@ -4386,7 +4506,8 @@
         "wiki_ck10000_then_acereason_math/checkpoint-8500",
         "wiki_ck10000_then_acereason_math/checkpoint-9000",
         "wiki_ck10000_then_acereason_math/checkpoint-9500",
-        "wiki_ck10000_then_acereason_math/checkpoint-10000"
+        "wiki_ck10000_then_acereason_math/checkpoint-10000",
+        "wiki_ck10000_then_acereason_math/checkpoint-10000_3B"
       ]
     },
     "wiki_ck10000_then_acereason_math_code_shuf": {
@@ -4409,7 +4530,8 @@
         "wiki_ck10000_then_acereason_math_code_shuf/checkpoint-8500",
         "wiki_ck10000_then_acereason_math_code_shuf/checkpoint-9000",
         "wiki_ck10000_then_acereason_math_code_shuf/checkpoint-9500",
-        "wiki_ck10000_then_acereason_math_code_shuf/checkpoint-10000"
+        "wiki_ck10000_then_acereason_math_code_shuf/checkpoint-10000",
+        "wiki_ck10000_then_acereason_math_code_shuf/checkpoint-10000_3B"
       ]
     },
     "wiki_ck10000_then_bright_all": {
