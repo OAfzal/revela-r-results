@@ -62,6 +62,17 @@ thead th:nth-child(1), thead th:nth-child(2), thead th:nth-child(3) { text-align
 thead th.asc::after { content: ' \2191'; }
 thead th.desc::after { content: ' \2193'; }
 thead th:last-child { background: #f0f0ff; }
+thead .cat-row th {
+  position: sticky; top: 0; z-index: 5;
+  text-align: center; font-size: .625rem; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase; padding: 5px 8px;
+  border: 1px solid #cbd5e1; cursor: default;
+}
+thead tr:nth-child(2) th { top: 27px; }
+thead .cat-row th.cat-se { background: #ecfdf5; color: #059669; }
+thead .cat-row th.cat-code { background: #fef3c7; color: #b45309; }
+thead .cat-row th.cat-thm { background: #ede9fe; color: #7c3aed; }
+thead .cat-row th.cat-blank { background: #f8fafc; }
 tbody td {
   padding: 7px 12px; border: 1px solid #e2e8f0;
   text-align: right; font-variant-numeric: tabular-nums;
@@ -96,6 +107,16 @@ tbody tr:hover td:nth-child(1), tbody tr:hover td:nth-child(2) { background: #f1
 .size-badge.s3B { background: #eef2ff; color: #6366f1; }
 .size-badge.s8B { background: #fef3c7; color: #b45309; }
 
+.cat-heading {
+  grid-column: 1 / -1; font-size: .75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; padding: 6px 0 2px;
+  display: flex; align-items: center; gap: 8px; color: #64748b;
+}
+.cat-heading::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+.cat-heading.se { color: #059669; }
+.cat-heading.code { color: #b45309; }
+.cat-heading.thm { color: #7c3aed; }
+.cat-sep { font-size: .625rem; color: #94a3b8; font-weight: 600; letter-spacing: .04em; padding: 0 4px; }
 .domains {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;
 }
@@ -215,6 +236,14 @@ let DATA, META, GRPS, FIELDS, tbl, topkGrid, searchQuery = '';
 let activeMode = 'best', activeSizes = new Set(['3B', '8B']);
 const K = 5;
 
+const CATEGORIES = [
+  {key: 'se',   label: 'StackExchange', cls: 'se',   tasks: ['biology','earth_science','economics','psychology','robotics','stackoverflow','sustainable_living']},
+  {key: 'code', label: 'Coding',        cls: 'code', tasks: ['pony','leetcode']},
+  {key: 'thm',  label: 'Theorems',      cls: 'thm',  tasks: ['aops','theoremqa_theorems','theoremqa_questions']},
+];
+function orderedTasks() { return CATEGORIES.flatMap(c => c.tasks); }
+function taskCategory(t) { return CATEGORIES.find(c => c.tasks.includes(t)); }
+
 function recolor() {
   if (!tbl) return;
   const rows = [...tbl.querySelectorAll('tbody tr')].filter(r => r.style.display !== 'none');
@@ -247,6 +276,7 @@ function toggleCol(colIdx, show) {
 }
 
 function sortTbl(th) {
+  if (th.parentNode.classList.contains('cat-row')) return;
   const idx = [...th.parentNode.children].indexOf(th);
   const asc = !th.classList.contains('asc');
   for (const x of th.parentNode.children) x.classList.remove('asc', 'desc');
@@ -322,7 +352,7 @@ function rebuildLeaderboard() {
     const badge = h('td', {dataset: {v: exp.retriever_size}});
     badge.appendChild(h('span', {cls: 'size-badge s' + exp.retriever_size, text: exp.retriever_size}));
     tr.appendChild(badge);
-    for (const t of META.tasks) {
+    for (const t of orderedTasks()) {
       const v = val(exp, t);
       tr.appendChild(h('td', {dataset: {v}, text: v}));
     }
@@ -343,35 +373,38 @@ function rebuildLeaderboard() {
 
 function rebuildTopK() {
   topkGrid.innerHTML = '';
-  for (const t of META.tasks) {
-    const reps = getDomainReps(t);
-    const ranked = Object.values(reps)
-      .filter(e => activeSizes.has(e.retriever_size) && e.scores[t] != null)
-      .sort((a, b) => b.scores[t] - a.scores[t])
-      .slice(0, K);
-    const topScore = ranked[0]?.scores[t] || 1;
+  for (const cat of CATEGORIES) {
+    topkGrid.appendChild(h('div', {cls: 'cat-heading ' + cat.cls, text: cat.label}));
+    for (const t of cat.tasks) {
+      const reps = getDomainReps(t);
+      const ranked = Object.values(reps)
+        .filter(e => activeSizes.has(e.retriever_size) && e.scores[t] != null)
+        .sort((a, b) => b.scores[t] - a.scores[t])
+        .slice(0, K);
+      const topScore = ranked[0]?.scores[t] || 1;
 
-    const ol = h('ol');
-    for (const exp of ranked) {
-      const pct = Math.round((exp.scores[t] / topScore) * 100);
-      ol.appendChild(h('li', null,
-        h('div', {cls: 'bar', style: {width: pct + '%'}}),
-        h('span', {cls: 'sz s' + exp.retriever_size, title: exp.retriever_size}),
-        h('span', {cls: 'name', title: exp.name, text: exp.name}),
-        h('span', {cls: 'sc', text: exp.scores[t].toFixed(2)})
+      const ol = h('ol');
+      for (const exp of ranked) {
+        const pct = Math.round((exp.scores[t] / topScore) * 100);
+        ol.appendChild(h('li', null,
+          h('div', {cls: 'bar', style: {width: pct + '%'}}),
+          h('span', {cls: 'sz s' + exp.retriever_size, title: exp.retriever_size}),
+          h('span', {cls: 'name', title: exp.name, text: exp.name}),
+          h('span', {cls: 'sc', text: exp.scores[t].toFixed(2)})
+        ));
+      }
+      topkGrid.appendChild(h('div', {cls: 'dom'},
+        h('div', {cls: 'dom-hdr'},
+          h('span', {text: t.replace(/_/g, ' ')}),
+          h('span', {cls: 'dom-best', text: topScore.toFixed(2)})
+        ),
+        ol,
+        h('div', {cls: 'dom-legend'},
+          h('span', null, h('span', {cls: 'sz s3B'}), '3B'),
+          h('span', null, h('span', {cls: 'sz s8B'}), '8B')
+        )
       ));
     }
-    topkGrid.appendChild(h('div', {cls: 'dom'},
-      h('div', {cls: 'dom-hdr'},
-        h('span', {text: t.replace(/_/g, ' ')}),
-        h('span', {cls: 'dom-best', text: topScore.toFixed(2)})
-      ),
-      ol,
-      h('div', {cls: 'dom-legend'},
-        h('span', null, h('span', {cls: 'sz s3B'}), '3B'),
-        h('span', null, h('span', {cls: 'sz s8B'}), '8B')
-      )
-    ));
   }
 }
 
@@ -414,12 +447,23 @@ fetch('./data.json')
     ));
 
     // Leaderboard
-    FIELDS = ['#', 'experiment', 'size', ...META.tasks, 'avg'];
+    const tasks = orderedTasks();
+    FIELDS = ['#', 'experiment', 'size', ...tasks, 'avg'];
     tbl = h('table', {id: 'lb'});
+    const thead = h('thead');
+
+    const catRow = h('tr', {cls: 'cat-row'});
+    catRow.appendChild(h('th', {cls: 'cat-blank', colspan: '3', text: ''}));
+    for (const cat of CATEGORIES)
+      catRow.appendChild(h('th', {cls: 'cat-' + cat.key, colspan: String(cat.tasks.length), text: cat.label}));
+    catRow.appendChild(h('th', {cls: 'cat-blank', text: ''}));
+    thead.appendChild(catRow);
+
     const hrow = h('tr');
     for (const f of FIELDS)
       hrow.appendChild(h('th', {text: f.replace(/_/g, ' '), onclick: function() { sortTbl(this); }}));
-    tbl.appendChild(h('thead', null, hrow));
+    thead.appendChild(hrow);
+    tbl.appendChild(thead);
     tbl.appendChild(h('tbody'));
 
     const search = h('input', {cls: 'search', type: 'text', placeholder: 'Filter experiments\u2026',
@@ -427,8 +471,11 @@ fetch('./data.json')
     });
 
     const colPills = h('div', {cls: 'col-pills'});
-    META.tasks.forEach((t, ti) => {
+    tasks.forEach((t, ti) => {
       const colIdx = ti + 3;
+      const cat = taskCategory(t);
+      if (ti > 0 && cat !== taskCategory(tasks[ti - 1]))
+        colPills.appendChild(h('span', {cls: 'cat-sep', text: '|'}));
       colPills.appendChild(h('button', {cls: 'col-pill on', text: t.replace(/_/g, ' '), dataset: {col: String(colIdx)},
         onclick: e => { e.target.classList.toggle('on'); toggleCol(colIdx, e.target.classList.contains('on')); }
       }));
