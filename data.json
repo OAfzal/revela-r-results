@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated": "2026-03-13T03:50:42",
+    "generated": "2026-03-13T13:13:27",
     "metric": "NDCG@10",
     "tasks": [
       "biology",
@@ -1970,6 +1970,48 @@
         "theoremqa_questions": 29.926
       },
       "avg": 16.433
+    },
+    {
+      "name": "coir_wo_csn/checkpoint-2953_3B",
+      "retriever_size": "3B",
+      "family": "baseline",
+      "checkpoint_step": 2953,
+      "scores": {
+        "biology": 17.003,
+        "earth_science": 23.518,
+        "economics": 17.921,
+        "pony": 2.403,
+        "psychology": 24.235,
+        "robotics": 10.161,
+        "stackoverflow": 16.668,
+        "sustainable_living": 17.637,
+        "aops": 8.692,
+        "leetcode": null,
+        "theoremqa_theorems": 17.43,
+        "theoremqa_questions": 25.523
+      },
+      "avg": 16.472
+    },
+    {
+      "name": "csn/checkpoint-4500_3B",
+      "retriever_size": "3B",
+      "family": "baseline",
+      "checkpoint_step": 4500,
+      "scores": {
+        "biology": 14.901,
+        "earth_science": 24.813,
+        "economics": 17.587,
+        "pony": 2.008,
+        "psychology": 23.657,
+        "robotics": 10.014,
+        "stackoverflow": 14.26,
+        "sustainable_living": null,
+        "aops": 6.515,
+        "leetcode": 33.746,
+        "theoremqa_theorems": 14.674,
+        "theoremqa_questions": 19.691
+      },
+      "avg": 16.533
     },
     {
       "name": "old_bright",
@@ -4424,6 +4466,16 @@
     "codefeedback_q_d": {
       "3B": [
         "codefeedback_q_d/checkpoint-1223_3B"
+      ]
+    },
+    "coir_wo_csn": {
+      "3B": [
+        "coir_wo_csn/checkpoint-2953_3B"
+      ]
+    },
+    "csn": {
+      "3B": [
+        "csn/checkpoint-4500_3B"
       ]
     },
     "wiki": {
